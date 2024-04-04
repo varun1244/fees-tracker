@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    environment:
+      INFLUXDB_DB: ${INFLUXDB_DB}
+      INFLUXDB_ADMIN_USER: ${INFLUXDB_USER}
+      INFLUXDB_ADMIN_PASSWORD: ${INFLUXDB_PASSWORD}
+    ports:
+      - "8086:8086"
+
+  node-app-main:
+    image: node:latest
+    container_name: node-app
+    volumes: -.:/app
+    working_dir: /app
+    command: bash -c "npm install && npm start"
+    environment:
+      INFLUXDB_HOST: influxdb
+      INFLUXDB_PORT: 8086
+      INFLUXDB_DB: ${INFLUXDB_DB}
+      INFLUXDB_USERNAME: ${INFLUXDB_USER}
+      INFLUXDB_PASSWORD: ${INFLUXDB_PASSWORD}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - influxdb
