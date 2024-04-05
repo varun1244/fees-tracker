@@ -6,9 +6,9 @@ A NodeJs service to track the transaction fees of uniswap WETH/USDC contract in 
 - Install [Docker](https://docs.docker.com/get-docker/) for your  operating system
 - Create a new `.env` file in this directory and add the following variables:
     ```
-    INFLUXDB_DB=<db name>
-    INFLUXDB_USER=<username>
-    INFLUXDB_PASSWORD=<password>
+    POSTGRES_DB=<DB name>
+    POSTGRES_USER=<DB username>
+    POSTGRES_PASSWORD=<DB password>
     ```
 
 ### Running the environment
