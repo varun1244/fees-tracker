@@ -12,7 +12,7 @@ const commonDb = {
 module.exports = {
   development: {
     ...commonDb,
-    startOver: false,
+    startOver: true,
     dialectOptions: {
       bigNumberStrings: true
     }

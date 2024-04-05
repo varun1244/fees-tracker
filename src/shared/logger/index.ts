@@ -1,5 +1,4 @@
 import winston from 'winston'
-import config from '../config'
 
 const Logger = (logLevel: string) => winston.createLogger({
   level: logLevel,
@@ -12,4 +11,4 @@ const Logger = (logLevel: string) => winston.createLogger({
   transports: [new winston.transports.Console()],
 })
 
-export default Logger(config.LOG_LEVEL)
+export default Logger(process.env.LOG_LEVEL || 'info')
