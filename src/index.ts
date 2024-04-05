@@ -1,12 +1,21 @@
-import express, { type Request, type Response } from 'express'
+import Server from './server'
+import dbService from './db'
+import Logger from './shared/logger'
 
-const app = express()
-const port = 3000
+const validateConnections = async () => {
+  try {
+    await dbService.testConnection()
+  } catch (err) {
+    Logger.error('Cannot conenct to the DB, please make sure your configuration is correct')
+    process.exit(1)
+  }
+}
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!')
-})
+const init = async () => {
+  await validateConnections()
+  if (process.env.MODE !== 'worker') {
+    new Server()
+  }
+}
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`)
-})
+init()
