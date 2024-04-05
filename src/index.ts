@@ -6,7 +6,7 @@ const validateConnections = async () => {
   try {
     await dbService.testConnection()
   } catch (err) {
-    Logger.error("Cannot conenct to the DB, please make sure your configuration is correct")
+    Logger.error('Cannot conenct to the DB, please make sure your configuration is correct')
     process.exit(1)
   }
 }

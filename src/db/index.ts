@@ -1,17 +1,17 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { Sequelize } from "sequelize";
+import * as fs from 'fs'
+import * as path from 'path'
+import { Sequelize } from 'sequelize'
 
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/config.js')[env];
-const db = {};
+const env = process.env.NODE_ENV || 'development'
+const config = require(__dirname + '/config.js')[env]
+const db = {}
 
 class DBProvider {
   public sequelize: Sequelize
-  private models: {}
+  private readonly models: {}
 
-  constructor() {
-    this.sequelize = new Sequelize(config.database, config.username, config.password, config);
+  constructor () {
+    this.sequelize = new Sequelize(config.database, config.username, config.password, config)
     this.registerModels()
   }
 
@@ -27,21 +27,21 @@ class DBProvider {
     return this.models
   }
 
-  private registerModels = () => {
-    const directoryPath = path.join(__dirname, '.');
+  private readonly registerModels = () => {
+    const directoryPath = path.join(__dirname, '.')
 
     fs.readdir(directoryPath, (err, files) => {
       if (err) {
         console.log(err)
-        return;
+        return
       }
 
       files.forEach(async (file) => {
         if (file.indexOf('.') !== 0 && file.slice(-3) === '.ts') {
           import(path.join(directoryPath, file))
         }
-      });
-    });
+      })
+    })
   }
 }
 

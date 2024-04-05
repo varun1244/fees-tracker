@@ -3,7 +3,7 @@ import dbService from '../db'
 import TransactionHistory from '../db/models/TransactionHistory'
 
 export default class Server {
-  constructor() {
+  constructor () {
     const app = express()
     const port = 3000
     app.get('/', async (req: Request, res: Response) => {
