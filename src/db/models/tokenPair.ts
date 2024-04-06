@@ -10,7 +10,8 @@ TokenPair.init({
     allowNull: false
   },
   name: DataTypes.STRING,
-  contractAddress: DataTypes.STRING
+  contractAddress: DataTypes.STRING,
+  active: DataTypes.BOOLEAN
 }, {
   sequelize: dbService.sequelize,
   underscored: true,

@@ -1,15 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Sequelize, type Options } from 'sequelize'
-import DBConfig from './config'
 
 const env = process.env.NODE_ENV ?? 'development'
-const config = DBConfig(env)
+const config = require("./config.js")[env]
 
 class DBProvider {
   public sequelize: Sequelize
 
-  constructor () {
+  constructor() {
     if (config?.database == null || config.username == null) {
       throw new Error('Invalid DB configuration')
     }
