@@ -35,7 +35,6 @@ function getDbQuery(req: Request, res: Response): FindOptions {
       'token_pair_id': parseInt(tokenId)
     }
   }
-  console.log(query)
   return query
 }
 
