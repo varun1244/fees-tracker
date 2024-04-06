@@ -1,6 +1,6 @@
 import Server from './server'
 import dbService from './db'
-import Logger from './shared/logger'
+import Logger from './logger'
 
 const validateConnections = async () => {
   try {

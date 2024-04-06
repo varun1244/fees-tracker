@@ -18,12 +18,7 @@ module.exports = {
     }
   },
   test: {
-    username: process.env.CI_DB_USERNAME,
-    password: process.env.CI_DB_PASSWORD,
-    database: process.env.CI_DB_NAME,
-    host: commonDb.host,
-    port: commonDb.port,
-    dialect: commonDb.dialect,
+    ...commonDb,
     startOver: true,
     dialectOptions: {
       bigNumberStrings: true
