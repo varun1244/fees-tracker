@@ -10,14 +10,6 @@ TransactionHistory.init({
     primaryKey: true,
     allowNull: false
   },
-  tokenPairId: {
-    type: DataTypes.INTEGER,
-    field: 'token_pair_id',
-    references: {
-      model: TokenPair,
-      key: 'id'
-    }
-  },
   feesUsdt: DataTypes.FLOAT,
   feesEth: DataTypes.FLOAT,
   timestamp: DataTypes.DATE,
@@ -29,4 +21,6 @@ TransactionHistory.init({
   timestamps: true
 })
 
-TransactionHistory.belongsTo(TokenPair)
+TransactionHistory.belongsTo(TokenPair, {
+  as: 'tokenPair'
+})

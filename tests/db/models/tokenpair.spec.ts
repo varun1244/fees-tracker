@@ -13,7 +13,7 @@ describe('models/tokenPair', () => {
     let tokenPair: TokenPair | null = await TokenPair.findByPk(1)
     expect(tokenPair).to.not.be.null
     expect(tokenPair?.dataValues).to.include.all.keys([
-      'id', 'name', 'contractAddress', 'createdAt', 'updatedAt'
+      'id', 'name', 'contractAddress', 'createdAt', 'updatedAt', 'active'
     ])
   })
 

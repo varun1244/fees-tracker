@@ -1,10 +1,10 @@
+/* eslint @typescript-eslint/no-var-requires: "off" */
 import * as fs from 'fs'
 import * as path from 'path'
 import { Sequelize, type Options } from 'sequelize'
-import DBConfig from './config'
 
 const env = process.env.NODE_ENV ?? 'development'
-const config = DBConfig(env)
+const config = require('./config.js')[env] as Options
 
 class DBProvider {
   public sequelize: Sequelize
@@ -13,7 +13,7 @@ class DBProvider {
     if (config?.database == null || config.username == null) {
       throw new Error('Invalid DB configuration')
     }
-    this.sequelize = new Sequelize(config.database, config.username, config.password, config as Options)
+    this.sequelize = new Sequelize(config.database, config.username, config.password, config)
     this.registerModels()
   }
 
