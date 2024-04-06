@@ -20,12 +20,12 @@ router.get('/', async (req: Request, res: Response) => {
   }
 
   Object.keys(query).forEach(key => {
-    if (req.query[key]) {
+    if (key in req.query) {
       const val = req.query[key] as string
       query[key as keyof typeof query] = parseInt(val) - 1
     }
   })
-  let tokens = await TokenPair.findAll(query)
+  const tokens = await TokenPair.findAll(query)
   res.json(tokens.map(item => item.toJSON()))
 })
 
@@ -66,9 +66,9 @@ router.post('/', async (req: Request, res: Response) => {
  *         Entity not found
  */
 router.get('/:id', async (req: Request, res: Response) => {
-  let token = await TokenPair.findByPk(req.params.id)
+  const token = await TokenPair.findByPk(req.params.id)
   if (token == null) {
-    res.status(404).json({ error: "Not found" })
+    res.status(404).json({ error: 'Not found' })
   }
   res.json(token?.toJSON())
 })
@@ -85,7 +85,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  *         Entity not found
  */
 router.use('/:tokenId/transaction', (req: Request, res: Response, next: NextFunction) => {
-  res.locals['tokenId'] = req.params.tokenId
+  res.locals.tokenId = req.params.tokenId
   next()
 }, transactionRoute)
 

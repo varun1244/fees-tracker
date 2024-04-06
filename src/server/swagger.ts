@@ -1,4 +1,4 @@
-import swaggerJSDoc, { SwaggerDefinition } from 'swagger-jsdoc'
+import swaggerJSDoc, { type SwaggerDefinition } from 'swagger-jsdoc'
 import config from './config'
 
 const swaggerDefinition: SwaggerDefinition = {

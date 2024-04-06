@@ -9,6 +9,12 @@
     "sourceType": "module"
   },
   "rules": {
-    "no-new": 0
+    "no-new": 0,
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ]
   }
 }

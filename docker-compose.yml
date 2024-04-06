@@ -21,7 +21,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
-    command: [ "test" ]
+    command: [ "dev" ]
     environment:
       DB_DIALECT: 'postgres'
       DB_USER: ${POSTGRES_USER}

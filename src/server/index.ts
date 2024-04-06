@@ -5,7 +5,7 @@ import tokenRoute from './routes/token'
 import transactionRoute from './routes/transaction'
 import swaggerSpec from './swagger'
 
-export default function Server(): Express {
+export default function Server (): Express {
   const app = express()
   const port = config.port
 
@@ -22,7 +22,6 @@ export default function Server(): Express {
   app.use(config.baseApiPath + '/token', tokenRoute)
 
   app.use('/q/swagger', swaggerUI.serve, swaggerUI.setup(swaggerSpec as JsonObject))
-
 
   app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`)

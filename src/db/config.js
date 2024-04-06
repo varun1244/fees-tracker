@@ -9,21 +9,6 @@ const commonDb = {
   poolMax: process.env.DB_CONNECTIONS_POOL_MAX ?? 20
 }
 
-const config = (env) => {
-  // In case we want to alter config based on environment
-  if (env === 'production') {
-    return commonDb
-  } else {
-    return {
-      ...commonDb,
-      startOver: true,
-      dialectOptions: {
-        bigNumberStrings: true
-      }
-    }
-  }
-}
-
 module.exports = {
   development: {
     ...commonDb,

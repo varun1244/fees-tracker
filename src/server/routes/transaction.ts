@@ -1,19 +1,19 @@
-import { type FindOptions } from 'sequelize';
+import { type FindOptions } from 'sequelize'
 import TransactionHistory from '../../db/models/transactionHistory'
 import { Router, type Request, type Response } from 'express'
 
 const router = Router()
-type PaginationQuery = {
+interface PaginationQuery {
   limit: number
   offset: number
 }
 
-function getDbQuery(req: Request, res: Response): FindOptions {
+function getDbQuery (req: Request, res: Response): FindOptions {
   const txnId = req.params.txnId
-  if (txnId) {
+  if (txnId !== undefined) {
     return {
       where: {
-        "txn_id": req.params.txnId
+        txn_id: req.params.txnId
       }
     }
   }
@@ -23,16 +23,16 @@ function getDbQuery(req: Request, res: Response): FindOptions {
     offset: 0
   }
   Object.keys(query).forEach(key => {
-    if (req.query[key]) {
+    if (key in req.query) {
       const val = req.query[key] as string
       query[key as keyof PaginationQuery] = parseInt(val) - 1
     }
   })
 
-  const tokenId = res.locals['tokenId']
+  const tokenId = res.locals.tokenId
   if (tokenId !== undefined) {
     query.where = {
-      'token_pair_id': parseInt(tokenId)
+      token_pair_id: parseInt(tokenId as string)
     }
   }
   return query
@@ -48,7 +48,7 @@ function getDbQuery(req: Request, res: Response): FindOptions {
  *         description: All transactions
  */
 router.get('/', async (req: Request, res: Response) => {
-  let txns = await TransactionHistory.findAll(getDbQuery(req, res))
+  const txns = await TransactionHistory.findAll(getDbQuery(req, res))
   res.json(txns.map(item => item.toJSON()))
 })
 
@@ -64,9 +64,9 @@ router.get('/', async (req: Request, res: Response) => {
  *         Entity not found
  */
 router.get('/:txnId', async (req: Request, res: Response) => {
-  let token = await TransactionHistory.findOne(getDbQuery(req, res))
+  const token = await TransactionHistory.findOne(getDbQuery(req, res))
   if (token == null || token.get('txnId') !== req.params.txnId) {
-    res.status(404).json({ error: "Not found" })
+    res.status(404).json({ error: 'Not found' })
   }
   res.json(token?.toJSON())
 })
