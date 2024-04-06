@@ -11,7 +11,6 @@ describe('models/TransactionHistory', () => {
 
   it('has all the required attributes', async () => {
     let txn: TransactionHistory | null = await TransactionHistory.findOne()
-    console.log(txn?.toJSON)
     expect(txn).to.not.be.null
     expect(txn?.dataValues).to.include.all.keys([
       'txnId', 'tokenPairId', 'feesEth', 'feesUsdt', 'timestamp', 'details', 'createdAt', 'updatedAt'

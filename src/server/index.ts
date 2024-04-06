@@ -4,7 +4,7 @@ import swaggerSpec from './swagger'
 
 import swaggerUI, { type JsonObject } from 'swagger-ui-express'
 
-export default function Server (): void {
+export default function Server(): void {
   const app = express()
   const port = 3000
   app.use('/q/swagger', swaggerUI.serve, swaggerUI.setup(swaggerSpec as JsonObject))
