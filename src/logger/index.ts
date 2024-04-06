@@ -1,6 +1,6 @@
 import winston from 'winston'
 
-const Logger = (logLevel: string) => winston.createLogger({
+const Logger = (logLevel: string): winston.Logger => winston.createLogger({
   level: logLevel,
   format: winston.format.combine(
     winston.format.timestamp({
@@ -11,4 +11,4 @@ const Logger = (logLevel: string) => winston.createLogger({
   transports: [new winston.transports.Console()]
 })
 
-export default Logger(process.env.LOG_LEVEL || 'info')
+export default Logger(process.env.LOG_LEVEL ?? 'info')
