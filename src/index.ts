@@ -14,7 +14,7 @@ const init = async (): Promise<void> => {
 }
 
 init().catch(err => {
-  Logger.error('Cannot conenct to the DB, please make sure your configuration is correct')
+  Logger.error('Cannot initiate the server, please ensure the configurations are valid')
   Logger.error(err)
   process.exit(1)
 })
