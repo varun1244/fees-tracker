@@ -3,7 +3,7 @@ const path = require('path');
 console.log(NODE_ENV)
 
 module.exports = {
-  'config': path.resolve('src', 'db', 'config.js'),
+  'config': path.resolve('src', 'db', 'config.ts'),
   'models-path': path.resolve('src', 'db', 'models'),
   'seeders-path': path.resolve('src', 'db', 'seeders', process.env.NODE_ENV || 'development'),
   'migrations-path': path.resolve('src', 'db', 'migrations')

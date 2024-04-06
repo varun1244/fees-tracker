@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up (queryInterface, Sequelize) {
     await queryInterface.bulkInsert('token_pair', [{
       id: 1,
       name: 'ETH-USDC',
@@ -14,7 +14,7 @@ module.exports = {
     }])
   },
 
-  async down(queryInterface, Sequelize) {
+  async down (queryInterface, Sequelize) {
     await queryInterface.bulkDelete('token_pair', null, {})
   }
-};
+}

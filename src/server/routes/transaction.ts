@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
+import { Router, type Request, type Response } from 'express'
 
-const router = Router();
+const router = Router()
 
 /**
  * @swagger
@@ -12,12 +12,12 @@ const router = Router();
  *         description: List of transaction
  */
 router.get('/', (req: Request, res: Response) => {
-  res.send('Hello, world!');
-});
+  res.send('Hello, world!')
+})
 
 router.get('/hello/:name', (req: Request, res: Response) => {
-  const name = req.params.name;
-  res.send(`Hello, ${name}!`);
-});
+  const name = req.params.name
+  res.send(`Hello, ${name}!`)
+})
 
-export default router;
+export default router

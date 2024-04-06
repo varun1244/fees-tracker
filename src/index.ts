@@ -1,21 +1,20 @@
-import Server from './server'
+import server from './server'
 import dbService from './db'
 import Logger from './logger'
 
-const validateConnections = async () => {
-  try {
-    await dbService.testConnection()
-  } catch (err) {
-    Logger.error('Cannot conenct to the DB, please make sure your configuration is correct')
-    process.exit(1)
-  }
+const validateConnections = async (): Promise<void> => {
+  await dbService.testConnection()
 }
 
-const init = async () => {
+const init = async (): Promise<void> => {
   await validateConnections()
   if (process.env.MODE !== 'worker') {
-    new Server()
+    server()
   }
 }
 
-init()
+init().catch(err => {
+  Logger.error('Cannot conenct to the DB, please make sure your configuration is correct')
+  Logger.error(err)
+  process.exit(1)
+})

@@ -1,8 +1,8 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up (queryInterface, Sequelize) {
     // Remove the `id` column from the `txn_history` table
     // Added the id by mistake, need to remove this column
     await queryInterface.removeColumn('txn_history', 'id')
@@ -25,7 +25,7 @@ module.exports = {
       type: Sequelize.INTEGER,
       references: {
         model: 'token_pair',
-        key: 'id',
+        key: 'id'
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE'
@@ -44,7 +44,7 @@ module.exports = {
     })
   },
 
-  async down(queryInterface, Sequelize) {
+  async down (queryInterface, Sequelize) {
     // Remove the `pair_id` foreign key from the `txn_history` table
     await queryInterface.removeConstraint('txn_history', 'txn_history_pair_id_fkey')
     await queryInterface.removeColumn('txn_history', 'pair_id')
@@ -54,7 +54,7 @@ module.exports = {
     await queryInterface.changeColumn('txn_history', 'txn_id', {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
+      unique: true
     })
 
     // Add the `id` column back to the `txn_history` table
@@ -62,7 +62,7 @@ module.exports = {
       type: Sequelize.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      unique: true,
+      unique: true
     })
   }
 }

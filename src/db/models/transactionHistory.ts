@@ -26,7 +26,7 @@ TransactionHistory.init({
   sequelize: dbService.sequelize,
   underscored: true,
   tableName: 'txn_history',
-  timestamps: true,
+  timestamps: true
 })
 
 TransactionHistory.belongsTo(TokenPair)
