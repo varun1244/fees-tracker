@@ -15,7 +15,7 @@ export default class LiveTracker {
   private readonly infura
   private readonly callback: TrackerCallBack | undefined
   private tracker: Tracker | null
-  constructor(
+  constructor (
     config: TrackerConfig,
     callback?: TrackerCallBack
   ) {
@@ -40,7 +40,7 @@ export default class LiveTracker {
     })
   }
 
-  disconnect = () => {
+  disconnect = (): void => {
     if (this.tracker !== null) {
       void this.tracker.disconnect()
       this.tracker = null

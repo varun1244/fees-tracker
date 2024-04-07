@@ -9,7 +9,7 @@ export default class JobQueue<T> {
   queue: Queue
   queueName: string
   connection: ioRedis
-  constructor(config: JobQueueConfig) {
+  constructor (config: JobQueueConfig) {
     this.queueName = config.queueName
     this.connection = config.connection
     this.queue = new Queue(config.queueName, {

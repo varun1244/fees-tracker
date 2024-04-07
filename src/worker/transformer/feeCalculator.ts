@@ -16,7 +16,7 @@ export default class FeeCalculator {
   private poll: NodeJS.Timeout | null = null
   private waiting: boolean
   static BINANCE_HOST = 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
-  constructor(maxSize?: number) {
+  constructor (maxSize?: number) {
     this.host = FeeCalculator.BINANCE_HOST
     this.pollInterval = 950
     this.maxSize = maxSize ?? 60 // Defaults to cache 60 seconds data
@@ -58,7 +58,7 @@ export default class FeeCalculator {
     }
   }
 
-  private cacheData(data: BinanceResp, timestamp?: number): void {
+  private cacheData (data: BinanceResp, timestamp?: number): void {
     const current = timestamp ?? Math.ceil(new Date().getTime() / 1000)
     this.timeValue.set(current, parseFloat(data.price))
     // Ensure cache data doesn't grow out of bounds

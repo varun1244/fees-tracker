@@ -36,7 +36,7 @@ export default class EtherscanTracker extends Tracker {
   private readonly pollTimeout: number
   private poller: NodeJS.Timeout | null = null
   callback: TrackerCallBack | undefined
-  constructor(
+  constructor (
     config: EtherscanConfig,
     callback?: TrackerCallBack
   ) {

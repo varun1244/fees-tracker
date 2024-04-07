@@ -34,7 +34,7 @@ export interface Fees {
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
   feeCalculator: FeeCalculator
-  constructor(tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  constructor (tokenPair: TokenPair, feeCalculator: FeeCalculator) {
     this.tokenPair = tokenPair
     this.feeCalculator = feeCalculator
   }
@@ -86,7 +86,7 @@ export default class BulkTransactionHandler {
   }
 
   process = async (data: TransactionBlock[]): Promise<TransactionModel[]> => {
-    let processed = await Promise.all(data.map(this.parseTxn))
+    const processed = await Promise.all(data.map(this.parseTxn))
     return processed.filter(txn => txn !== null) as TransactionModel[]
   }
 }

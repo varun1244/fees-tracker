@@ -34,7 +34,7 @@ const init = async (): Promise<void> => {
     // It can be split into its own seperate instance
     server()
     if (tokenPair !== null) {
-      new LiveTracker({
+      void new LiveTracker({
         etherScan: {
           tokenPair,
           apiKey: process.env.ETHERSCAN_API_KEY ?? '',

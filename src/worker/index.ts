@@ -15,7 +15,7 @@ export default class Worker {
   jobQueue: JobQueue<TransactionBlock>
   feeCalculator: FeeCalculator
   tokenPair: TokenPair
-  constructor(config: WorkerConfig) {
+  constructor (config: WorkerConfig) {
     this.jobQueue = config.jobQueue
     this.tokenPair = config.tokenPair
     this.feeCalculator = new FeeCalculator()
@@ -25,8 +25,8 @@ export default class Worker {
   init = (): void => {
     this.feeCalculator.start()
     const worker = this.jobQueue.registerWorker('txnBlockHandler', async (job: Job<TransactionBlock[]>) => {
-      let models = await (new BulkTransactionHandler(this.tokenPair, this.feeCalculator)).process(job.data)
-      return TransactionHistory.bulkCreate(models)
+      const models = await (new BulkTransactionHandler(this.tokenPair, this.feeCalculator)).process(job.data)
+      return await TransactionHistory.bulkCreate(models)
     })
 
     process.on('SIGTERM', () => {
