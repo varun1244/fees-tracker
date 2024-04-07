@@ -1,35 +1,35 @@
-import { Job } from "bullmq";
-import TokenPair from "../db/models/tokenPair";
-import JobQueue from "./jobQueue";
-import BulkTransactionHandler, { TransactionBlock } from "./transformer/bulkTransactionHandler";
+import { type Job } from 'bullmq'
+import type TokenPair from '../db/models/tokenPair'
+import type JobQueue from './jobQueue'
+import BulkTransactionHandler, { type TransactionBlock } from './transformer/bulkTransactionHandler'
 
-import FeeCalculator from './transformer/feeCalculator';
+import FeeCalculator from './transformer/feeCalculator'
 
-export type WorkerConfig = {
+export interface WorkerConfig {
   tokenPair: TokenPair
   jobQueue: JobQueue<TransactionBlock>
 }
 
 export default class Worker {
   jobQueue: JobQueue<TransactionBlock>
-  feeCalculator: FeeCalculator;
-  tokenPair: TokenPair;
-  constructor(config: WorkerConfig) {
+  feeCalculator: FeeCalculator
+  tokenPair: TokenPair
+  constructor (config: WorkerConfig) {
     this.jobQueue = config.jobQueue
     this.tokenPair = config.tokenPair
     this.feeCalculator = new FeeCalculator()
     this.init()
   }
 
-  init = () => {
+  init = (): void => {
     this.feeCalculator.start()
-    const worker = this.jobQueue.registerWorker("txnBlockHandler", async (job: Job<Array<TransactionBlock>>) => {
-      new BulkTransactionHandler(this.tokenPair, this.feeCalculator).process(job.data)
+    const worker = this.jobQueue.registerWorker('txnBlockHandler', (job: Job<TransactionBlock[]>) => {
+      void new BulkTransactionHandler(this.tokenPair, this.feeCalculator).process(job.data)
     })
 
     process.on('SIGTERM', () => {
       this.feeCalculator.stop()
-      worker.close()
+      void worker.close()
     })
   }
 }

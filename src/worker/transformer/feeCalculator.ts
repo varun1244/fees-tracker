@@ -1,80 +1,81 @@
-import axios, { type CancelToken } from 'axios'
+import axios from 'axios'
 import { Agent } from 'http'
 import logger from '../../logger'
 
-export type BinanceResp = {
+export interface BinanceResp {
   symbol: string
   price: string
 }
 
 export default class FeeCalculator {
-  private agent: Agent
-  private host: string
-  private timeValue: Map<number, number> = new Map()
-  private maxSize = 60
-  private pollInterval: number
+  private readonly agent: Agent
+  private readonly host: string
+  private readonly timeValue = new Map<number, number>()
+  private readonly maxSize = 60
+  private readonly pollInterval: number
   private poll: NodeJS.Timeout | null = null
   private waiting: boolean
-  constructor() {
+  constructor () {
     this.host = 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
     this.pollInterval = 1000
     this.agent = new Agent({
-      'keepAlive': true
+      keepAlive: true
     })
   }
 
-  start = () => {
+  start = (): void => {
     if (this.poll !== null) return
-    this.pollMethod()
+    void this.pollMethod()
     this.poll = setInterval(this.pollMethod, this.pollInterval)
   }
 
-  stop = () => {
+  stop = (): void => {
     if (this.poll !== null) {
       clearInterval(this.poll)
     }
     this.poll = null
   }
 
-  getFeesUsd = (timestamp: number, fessEth: number, price: number = this.getRate(timestamp)) => {
-    return parseFloat((price * fessEth) + '').toFixed(4);
-  }
-
-  getRate = (timestamp: number): number | never => {
-    if (this.timeValue.get(timestamp) === undefined) {
-      throw new Error("No rate found for: " + timestamp)
+  getFeesUsd = (timestamp: number, fessEth: number, price?: number): string => {
+    const rate = price ?? this.getRate(timestamp)
+    if (rate === undefined) {
+      throw new Error('No rate found for: ' + timestamp)
     }
-    return this.timeValue.get(timestamp) as number
+    return parseFloat((rate * fessEth) + '').toFixed(4)
   }
 
-  private pollMethod = async () => {
+  getRate = (timestamp: number): number | undefined => {
+    return this.timeValue.get(timestamp)
+  }
+
+  private readonly pollMethod = async (): Promise<void> => {
     if (this.waiting) return
     const data = await this.getData()
-    if (data != null) {
-      this.cacheData(data! as BinanceResp)
+    if (data !== null) {
+      this.cacheData(data)
     }
   }
 
-  private cacheData(data: BinanceResp, timestamp?: number) {
+  private cacheData (data: BinanceResp, timestamp?: number): void {
     const current = timestamp ?? Math.ceil(new Date().getTime() / 1000)
     this.timeValue.set(current, parseFloat(data.price))
     // Ensure cache data doesn't grow out of bounds
     const timesArray = Array.from(this.timeValue.keys()).sort((a: number, b: number) => (b - a))
     if (timesArray.length === 1) {
-      logger.info("Starting live price: " + current)
+      logger.info('Starting live price: ' + current)
     }
     timesArray.slice(this.maxSize).forEach(key => this.timeValue.delete(key))
   }
 
-  private getData = async () => {
+  private readonly getData = async (): Promise<BinanceResp | null> => {
     try {
       this.waiting = true
       const response = await axios.get(this.host, { httpAgent: this.agent })
       this.waiting = false
       return response.data
     } catch (error) {
-      logger.error(error);
-      return null;
+      logger.error(error)
+      return null
     }
   }
 }

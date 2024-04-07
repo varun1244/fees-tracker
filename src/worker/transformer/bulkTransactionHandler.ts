@@ -1,9 +1,9 @@
-import TransactionHistory, { TransactionModel } from "../../db/models/transactionHistory"
-import FeeCalculator from "./feeCalculator"
-import logger from "../../logger"
-import TokenPair from "@db/models/tokenPair"
+import type TokenPair from '@db/models/tokenPair'
+import TransactionHistory, { type TransactionModel } from '../../db/models/transactionHistory'
+import logger from '../../logger'
+import type FeeCalculator from './feeCalculator'
 
-export type TransactionBlock = {
+export interface TransactionBlock {
   blockNumber: string
   timeStamp: string
   hash: string
@@ -25,7 +25,7 @@ export type TransactionBlock = {
   confirmations: string
 }
 
-export type Fees = {
+export interface Fees {
   feesEth: string
   feesUsdt: string
   rate: string
@@ -34,32 +34,33 @@ export type Fees = {
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
   feeCalculator: FeeCalculator
-  constructor(tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  constructor (tokenPair: TokenPair, feeCalculator: FeeCalculator) {
     this.tokenPair = tokenPair
     this.feeCalculator = feeCalculator
   }
 
-  private computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
+  private readonly computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
     try {
       const rate = this.feeCalculator.getRate(ts)
+      if (rate === undefined) throw new Error('Unknown rate')
       let decimals = txn.gasUsed.length
       decimals = decimals + txn.gasPrice.length
-      const gasUsed = parseFloat("." + txn.gasUsed)
-      const gasPrice = parseFloat("." + txn.gasPrice)
+      const gasUsed = parseFloat('.' + txn.gasUsed)
+      const gasPrice = parseFloat('.' + txn.gasPrice)
       const offset = (10 ** (18 - decimals))
       const feesEth = (gasUsed * gasPrice / offset)
       return {
         feesEth: feesEth.toString(),
         feesUsdt: this.feeCalculator.getFeesUsd(ts, feesEth),
-        rate: rate.toString()
+        rate: rate?.toString()
       }
     } catch (err) {
-      logger.warn("Unable to find USDT rate at ts " + ts + ", skipping this transaction")
+      logger.warn('Unable to find USDT rate at ts ' + ts + ', skipping this transaction')
       return null
     }
   }
 
-  private parseTxn = async (txn: TransactionBlock): Promise<TransactionModel | null> => {
+  private readonly parseTxn = async (txn: TransactionBlock): Promise<TransactionModel | null> => {
     const ts = parseInt(txn.timeStamp)
     const pricing = await this.computePrice(ts, txn)
     if (pricing === null) {
@@ -79,14 +80,14 @@ export default class BulkTransactionHandler {
         gasPrice: txn.gasPrice,
         rate: pricing.rate,
         gasUsed: txn.gasUsed,
-        cumulativeGasUsed: txn.cumulativeGasUsed,
+        cumulativeGasUsed: txn.cumulativeGasUsed
       }
     }
   }
 
-  process = async (data: Array<TransactionBlock>) => {
+  process = async (data: TransactionBlock[]): Promise<void> => {
     let processed = await Promise.all(data.map(this.parseTxn))
     processed = processed.filter(txn => txn !== null)
-    TransactionHistory.bulkCreate(processed as Array<TransactionModel>)
+    void TransactionHistory.bulkCreate(processed as TransactionModel[])
   }
 }

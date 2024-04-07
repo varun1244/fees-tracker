@@ -8,7 +8,7 @@ interface PaginationQuery {
   offset: number
 }
 
-function getDbQuery(req: Request, res: Response): FindOptions {
+function getDbQuery (req: Request, res: Response): FindOptions {
   const txnId = req.params.txnId
   if (txnId !== undefined) {
     return {

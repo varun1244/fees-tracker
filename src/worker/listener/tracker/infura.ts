@@ -1,8 +1,8 @@
-import TokenPair from "@db/models/tokenPair"
-import Tracker from "./interface"
+import type TokenPair from '@db/models/tokenPair'
+import Tracker from './interface'
 import Web3 from 'web3'
 
-export type InfuraConfig = {
+export interface InfuraConfig {
   tokenPair: TokenPair
   apiKey: string
   host: string
@@ -13,7 +13,7 @@ export default class InfuraTracker extends Tracker {
   contractAddress: string
   web3: Web3
 
-  constructor(config: InfuraConfig) {
+  constructor (config: InfuraConfig) {
     super()
     this.contractAddress = config.tokenPair.getContractAddress()
     this.web3 = new Web3(new Web3.providers.WebsocketProvider(`${config.host}/${config.apiKey}`))
@@ -25,7 +25,7 @@ export default class InfuraTracker extends Tracker {
     //   address: this.contractAddress
     // })).on('data', async (transaction) => {
     //   if (transaction != null) {
-    //    
+    //
     //   }
     // })
     return this

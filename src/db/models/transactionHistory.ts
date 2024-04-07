@@ -2,12 +2,12 @@ import { DataTypes, Model } from 'sequelize'
 import dbService from '../index'
 import TokenPair from './tokenPair'
 
-export type TransactionModel = {
+export interface TransactionModel {
   txnId: string
   feesEth: string
   feesUsdt: string
   timestamp: Date
-  details: Object
+  details: Record<string, any>
   tokenPairId: string
 }
 
@@ -25,7 +25,7 @@ TransactionHistory.init({
   details: DataTypes.JSON,
   tokenPairId: {
     type: DataTypes.INTEGER,
-    field: 'token_pair_id',
+    field: 'token_pair_id'
   }
 }, {
   sequelize: dbService.sequelize,

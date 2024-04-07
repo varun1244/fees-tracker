@@ -1,15 +1,15 @@
-import { Queue, Worker, type Job, type JobsOptions, BulkJobOptions } from "bullmq";
-import ioRedis from 'ioredis'
+import { Queue, Worker, type Job, type JobsOptions } from 'bullmq'
+import type ioRedis from 'ioredis'
 
-export type JobQueueConfig = {
+export interface JobQueueConfig {
   queueName: string
   connection: ioRedis
 }
 export default class JobQueue<T> {
-  queue: Queue;
-  queueName: string;
-  connection: ioRedis;
-  constructor(config: JobQueueConfig) {
+  queue: Queue
+  queueName: string
+  connection: ioRedis
+  constructor (config: JobQueueConfig) {
     this.queueName = config.queueName
     this.connection = config.connection
     this.queue = new Queue(config.queueName, {
@@ -17,30 +17,22 @@ export default class JobQueue<T> {
 
       defaultJobOptions: {
         removeOnComplete: true,
-        removeOnFail: true,
+        removeOnFail: true
       }
     })
   }
 
-  addJob = (id: string, data: Array<T>, options?: JobsOptions) => {
-    return this.queue.add(id, data, options);
+  addJob = async (id: string, data: T[], options?: JobsOptions): Promise<Job<T>> => {
+    return await this.queue.add(id, data, options)
   }
 
-  getQueue = () => this.queue
+  getQueue = (): Queue<T> => this.queue
 
-  // addBulkJob = (name: string, data: Array<T>, options?: BulkJobOptions) => {
-  //   return this.queue.addBulk({
-  //     // name,
-  //     data,
-  //     opts: options
-  //   })
-  // }
-
-  registerWorker = (name: string, worker: (job: Job<Array<T>>) => Promise<any>) => {
+  registerWorker = (name: string, worker: (job: Job<T[]>) => Promise<any> | any): Worker<T[]> => {
     return new Worker(this.queueName, worker, {
       connection: this.connection,
       autorun: true,
       name
-    });
+    })
   }
 }
