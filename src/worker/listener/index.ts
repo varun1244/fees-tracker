@@ -13,19 +13,22 @@ export type TrackerCallBack = (block: TransactionBlock[]) => void
 export default class LiveTracker {
   private readonly etherScan
   private readonly infura
-  private tracker: Tracker
-  callback: TrackerCallBack | undefined
-  constructor (
+  private readonly callback: TrackerCallBack | undefined
+  private tracker: Tracker | null
+  constructor(
     config: TrackerConfig,
     callback?: TrackerCallBack
   ) {
     this.infura = config.infura
     this.etherScan = config.etherScan
+    if (this.infura === undefined && this.etherScan === undefined) {
+      throw new Error('No listener config found')
+    }
     this.callback = callback
-    void this.initListener()
   }
 
   initListener = async (): Promise<void> => {
+    if (this.tracker !== null) return
     if (this.infura !== undefined) {
       this.tracker = await this.listenWithInfura()
     } else if (this.etherScan !== undefined) {
@@ -33,13 +36,16 @@ export default class LiveTracker {
     }
 
     process.on('SIGTERM', () => {
-      void this.tracker.disconnect()
+      this.disconnect()
     })
   }
 
-  // callback = async (data: Array<TransactionBlock>) => {
-  //   // bulkTransactionHandler.process(data)
-  // }
+  disconnect = () => {
+    if (this.tracker !== null) {
+      void this.tracker.disconnect()
+      this.tracker = null
+    }
+  }
 
   private readonly listenWithInfura = async (): Promise<Tracker> => {
     // this.tracker = new InfuraTracker(this.infura!)

@@ -11,13 +11,15 @@ export default class FeeCalculator {
   private readonly agent: Agent
   private readonly host: string
   private readonly timeValue = new Map<number, number>()
-  private readonly maxSize = 60
   private readonly pollInterval: number
+  private readonly maxSize
   private poll: NodeJS.Timeout | null = null
   private waiting: boolean
-  constructor () {
-    this.host = 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
-    this.pollInterval = 1000
+  static BINANCE_HOST = 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
+  constructor(maxSize?: number) {
+    this.host = FeeCalculator.BINANCE_HOST
+    this.pollInterval = 950
+    this.maxSize = maxSize ?? 60 // Defaults to cache 60 seconds data
     this.agent = new Agent({
       keepAlive: true
     })
@@ -56,7 +58,7 @@ export default class FeeCalculator {
     }
   }
 
-  private cacheData (data: BinanceResp, timestamp?: number): void {
+  private cacheData(data: BinanceResp, timestamp?: number): void {
     const current = timestamp ?? Math.ceil(new Date().getTime() / 1000)
     this.timeValue.set(current, parseFloat(data.price))
     // Ensure cache data doesn't grow out of bounds

@@ -42,7 +42,7 @@ const init = async (): Promise<void> => {
         }
       }, (data: TransactionBlock[]) => {
         void jobQueue.addJob('newJobs', data)
-      })
+      }).initListener()
     }
   }
 }

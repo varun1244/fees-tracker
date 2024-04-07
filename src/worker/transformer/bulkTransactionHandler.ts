@@ -1,5 +1,5 @@
 import type TokenPair from '@db/models/tokenPair'
-import TransactionHistory, { type TransactionModel } from '../../db/models/transactionHistory'
+import { type TransactionModel } from '../../db/models/transactionHistory'
 import logger from '../../logger'
 import type FeeCalculator from './feeCalculator'
 
@@ -34,12 +34,12 @@ export interface Fees {
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
   feeCalculator: FeeCalculator
-  constructor (tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  constructor(tokenPair: TokenPair, feeCalculator: FeeCalculator) {
     this.tokenPair = tokenPair
     this.feeCalculator = feeCalculator
   }
 
-  private readonly computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
+  computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
     try {
       const rate = this.feeCalculator.getRate(ts)
       if (rate === undefined) throw new Error('Unknown rate')
@@ -60,7 +60,7 @@ export default class BulkTransactionHandler {
     }
   }
 
-  private readonly parseTxn = async (txn: TransactionBlock): Promise<TransactionModel | null> => {
+  parseTxn = async (txn: TransactionBlock): Promise<TransactionModel | null> => {
     const ts = parseInt(txn.timeStamp)
     const pricing = await this.computePrice(ts, txn)
     if (pricing === null) {
@@ -85,9 +85,8 @@ export default class BulkTransactionHandler {
     }
   }
 
-  process = async (data: TransactionBlock[]): Promise<void> => {
+  process = async (data: TransactionBlock[]): Promise<TransactionModel[]> => {
     let processed = await Promise.all(data.map(this.parseTxn))
-    processed = processed.filter(txn => txn !== null)
-    void TransactionHistory.bulkCreate(processed as TransactionModel[])
+    return processed.filter(txn => txn !== null) as TransactionModel[]
   }
 }

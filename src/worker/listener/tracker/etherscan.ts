@@ -1,10 +1,10 @@
 import type TokenPair from '@db/models/tokenPair'
 import axios from 'axios'
 import { Agent } from 'http'
+import { type TrackerCallBack } from '../'
 import logger from '../../../logger'
 import { type TransactionBlock } from '../../transformer/bulkTransactionHandler'
 import Tracker from './interface'
-import { type TrackerCallBack } from '../'
 
 export interface EtherscanConfig {
   tokenPair: TokenPair
@@ -14,7 +14,7 @@ export interface EtherscanConfig {
 }
 
 export interface EtherscanRequest {
-  startBlock: number
+  startblock: number
   page: number
   limit: number
 }
@@ -34,9 +34,9 @@ export default class EtherscanTracker extends Tracker {
   private lastBlock: number | null
   private readonly agent: Agent
   private readonly pollTimeout: number
-  private poller: NodeJS.Timeout
+  private poller: NodeJS.Timeout | null = null
   callback: TrackerCallBack | undefined
-  constructor (
+  constructor(
     config: EtherscanConfig,
     callback?: TrackerCallBack
   ) {
@@ -60,7 +60,7 @@ export default class EtherscanTracker extends Tracker {
     url.searchParams.set('address', this.address)
     url.searchParams.set('apikey', this.apiKey)
     if (req !== undefined) {
-      url.searchParams.set('startblock', req.startBlock?.toString())
+      url.searchParams.set('startblock', req.startblock.toString())
       url.searchParams.set('page', req.page.toString())
       url.searchParams.set('offset', req.limit.toString())
     } else if (this.lastBlock !== null) {
@@ -110,12 +110,18 @@ export default class EtherscanTracker extends Tracker {
   }
 
   connect = async (): Promise<this> => {
-    logger.info('Poll frequency: ', this.pollTimeout)
-    this.poller = setInterval(this.pollFetchData, this.pollTimeout)
+    if (this.poller === null) {
+      logger.info('Poll frequency: ', this.pollTimeout)
+      this.poller = setInterval(this.pollFetchData, this.pollTimeout)
+    }
     return this
   }
 
   disconnect = async (): Promise<void> => {
-    clearInterval(this.poller)
+    if (this.poller !== null) {
+      logger.info('Disconnecting: ')
+      clearInterval(this.poller)
+      this.poller = null
+    }
   }
 }
