@@ -38,7 +38,7 @@ const init = async (): Promise<void> => {
         etherScan: {
           tokenPair,
           apiKey: process.env.ETHERSCAN_API_KEY ?? '',
-          pollTimeout: 10000
+          pollTimeout: 2000
         }
       }, (data: TransactionBlock[]) => {
         void jobQueue.addJob('newJobs', data)
