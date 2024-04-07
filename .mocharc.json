@@ -3,6 +3,7 @@
     "ts"
   ],
   "spec": "tests/**/*.spec.{ts,js}",
+  "exclude": "tests/helpers/**/*.spec.ts",
   "require": [
     "ts-node/register"
   ],
