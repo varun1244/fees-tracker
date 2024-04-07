@@ -8,7 +8,7 @@ interface PaginationQuery {
   offset: number
 }
 
-function getDbQuery (req: Request, res: Response): FindOptions {
+function getDbQuery(req: Request, res: Response): FindOptions {
   const txnId = req.params.txnId
   if (txnId !== undefined) {
     return {
@@ -20,7 +20,8 @@ function getDbQuery (req: Request, res: Response): FindOptions {
 
   const query: FindOptions = {
     limit: 10,
-    offset: 0
+    offset: 0,
+    order: [['timestamp', 'DESC']]
   }
   Object.keys(query).forEach(key => {
     if (key in req.query) {

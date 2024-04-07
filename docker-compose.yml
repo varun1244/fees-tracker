@@ -15,9 +15,16 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - 5432:5432
+  redis-service:
+    image: redis:6.0.16-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
   node-app-main:
     build: .
-    container_name: node-app
+    container_name: node-app-main
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -29,7 +36,26 @@ services:
       DB_NAME: ${POSTGRES_DB}
       DB_HOST: postgres
       DB_PORT: 5432
+      REDIS_URL: redis://redis-service
+      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
     ports:
       - "3000:3000"
+    depends_on:
+      - postgres
+  node-app-worker:
+    build: .
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    command: [ "dev:worker" ]
+    environment:
+      DB_DIALECT: 'postgres'
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_URL: redis://redis-service
+      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
     depends_on:
       - postgres

@@ -1,7 +1,11 @@
 import { DataTypes, Model } from 'sequelize'
 import dbService from '../index'
 
-export default class TokenPair extends Model { }
+export default class TokenPair extends Model {
+  getContractAddress = (): string => {
+    return this.get('contractAddress') as string
+  }
+}
 
 TokenPair.init({
   id: {

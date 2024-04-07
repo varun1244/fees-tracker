@@ -5,7 +5,7 @@ import tokenRoute from './routes/token'
 import transactionRoute from './routes/transaction'
 import swaggerSpec from './swagger'
 
-export default function Server (): Express {
+export default function Server(): Express {
   const app = express()
   const port = config.port
 
