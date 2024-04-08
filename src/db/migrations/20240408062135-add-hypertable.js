@@ -10,6 +10,11 @@ module.exports = {
       allowNull: false,
     })
 
+    await queryInterface.addColumn('txn_history', 'block_number', {
+      type: Sequelize.BIGINT,
+      allowNull: false,
+    })
+
     await queryInterface.changeColumn('txn_history', 'timestamp', {
       type: 'TIMESTAMPTZ',
       allowNull: false,
@@ -19,6 +24,12 @@ module.exports = {
       unique: true,
       name: 'unique_timestamp_txn_id'
     });
+
+    await queryInterface.addColumn('token_pair', 'start_block', {
+      type: Sequelize.BIGINT,
+      allowNull: false,
+    })
+
     return queryInterface.sequelize.query("SELECT create_hypertable('txn_history', 'timestamp')")
   },
 

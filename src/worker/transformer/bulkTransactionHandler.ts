@@ -34,7 +34,7 @@ export interface Fees {
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
   feeCalculator: FeeCalculator
-  constructor (tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  constructor(tokenPair: TokenPair, feeCalculator: FeeCalculator) {
     this.tokenPair = tokenPair
     this.feeCalculator = feeCalculator
   }
@@ -71,9 +71,9 @@ export default class BulkTransactionHandler {
       timestamp: new Date(ts * 1000),
       feesEth: pricing.feesEth,
       feesUsdt: pricing.feesUsdt,
-      tokenPairId: this.tokenPair.get('id') as string,
+      tokenPairId: this.tokenPair.get('id'),
+      blockNumber: BigInt(txn.blockNumber),
       details: {
-        blockNumber: txn.blockNumber,
         from: txn.from,
         value: txn.to,
         gas: txn.gas,

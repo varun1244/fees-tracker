@@ -3,10 +3,15 @@ import dbService from '../index'
 import TransactionHistory from './transactionHistory'
 
 export default class TokenPair extends Model {
-  declare getTransactions: HasManyGetAssociationsMixin<TransactionHistory>;
+  declare id: number;
+  declare name: string;
+  declare contractAddress: string
+  declare startBlock: BigInt
+
+  declare getTransactions: HasManyGetAssociationsMixin<TransactionHistory>
 
   getContractAddress = (): string => {
-    return this.get('contractAddress') as string
+    return this.contractAddress as string
   }
 }
 
@@ -18,7 +23,8 @@ TokenPair.init({
   },
   name: DataTypes.STRING,
   contractAddress: DataTypes.STRING,
-  active: DataTypes.BOOLEAN
+  active: DataTypes.BOOLEAN,
+  startBlock: DataTypes.BIGINT
 }, {
   sequelize: dbService.sequelize,
   underscored: true,

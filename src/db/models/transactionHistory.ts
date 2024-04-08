@@ -8,7 +8,8 @@ export interface TransactionModel {
   feesUsdt: string
   timestamp: Date
   details: Record<string, any>
-  tokenPairId: string
+  tokenPairId: number
+  blockNumber: BigInt
 }
 
 export default class TransactionHistory extends Model<TransactionModel> { }
@@ -26,7 +27,8 @@ TransactionHistory.init({
   tokenPairId: {
     type: DataTypes.INTEGER,
     field: 'token_pair_id'
-  }
+  },
+  blockNumber: DataTypes.BIGINT
 }, {
   sequelize: dbService.sequelize,
   underscored: true,
