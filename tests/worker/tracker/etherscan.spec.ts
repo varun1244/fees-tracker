@@ -1,9 +1,9 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { getMockTransactions } from "../../../helpers";
-import Etherscan, { EtherscanConfig } from '../../../../src/worker/listener/tracker/etherscan'
+import { getMockTransactions } from "../../helpers";
+import Etherscan, { EtherscanConfig } from '../../../src/worker/tracker/etherscan'
 import sinon from "sinon";
-import TokenPair from "../../../../src/db/models/tokenPair";
+import TokenPair from "../../../src/db/models/tokenPair";
 import { expect } from "chai";
 
 describe('Etherscan', () => {

@@ -1,7 +1,7 @@
 import sinon from 'sinon'
 import { getMockTransactions } from '../../helpers'
 import BulkTransactionHandler from '../../../src/worker/transformer/bulkTransactionHandler'
-import FeeCalculator from '../../../src/worker/transformer/feeCalculator'
+import LivePrice from '../../../src/worker/price/livePrice'
 import TokenPair from '../../../src/db/models/tokenPair'
 import { expect } from 'chai'
 
@@ -17,9 +17,9 @@ describe('BulkTransactionHandler', () => {
 
   describe('when rate is available', () => {
     before(() => {
-      const feeCalculator = new FeeCalculator()
-      sinon.stub(feeCalculator, 'getRate').callsFake((_ts) => 100)
-      txnHandler = new BulkTransactionHandler(tokenPair, feeCalculator)
+      const livePrice = new LivePrice()
+      sinon.stub(livePrice, 'getRate').callsFake((_ts) => 100)
+      txnHandler = new BulkTransactionHandler(tokenPair, livePrice)
     })
 
     it('parses the gas fee accurately', async function () {
@@ -41,9 +41,9 @@ describe('BulkTransactionHandler', () => {
 
   describe('when rate is not available', () => {
     before(() => {
-      const feeCalculator = new FeeCalculator()
-      sinon.stub(feeCalculator, 'getRate').callsFake((_ts) => undefined)
-      txnHandler = new BulkTransactionHandler(tokenPair, feeCalculator)
+      const livePrice = new LivePrice()
+      sinon.stub(livePrice, 'getRate').callsFake((_ts) => null)
+      txnHandler = new BulkTransactionHandler(tokenPair, livePrice)
     })
 
     it('returns null ', async function () {

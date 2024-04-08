@@ -1,10 +1,10 @@
-import type TokenPair from '../../../db/models/tokenPair'
 import axios from 'axios'
 import { Agent } from 'http'
-import { type TrackerCallBack } from '../'
-import logger from '../../../logger'
-import { type TransactionBlock } from '../../transformer/bulkTransactionHandler'
-import Tracker from './interface'
+import { type TrackerCallBack } from '../listener'
+import type TokenPair from '../../db/models/tokenPair'
+import logger from '../../logger'
+import Tracker from '../interface/tracker'
+import { type TransactionBlock } from '../transformer/bulkTransactionHandler'
 
 export interface EtherscanConfig {
   tokenPair: TokenPair

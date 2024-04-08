@@ -1,7 +1,7 @@
 import type TokenPair from '../../db/models/tokenPair'
 import { type TransactionModel } from '../../db/models/transactionHistory'
 import logger from '../../logger'
-import type FeeCalculator from './feeCalculator'
+import RateCalculator from '../interface/rateCalculator'
 
 export interface TransactionBlock {
   blockNumber: string
@@ -33,16 +33,16 @@ export interface Fees {
 
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
-  feeCalculator: FeeCalculator
-  constructor(tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  rateCalculator: RateCalculator
+  constructor(tokenPair: TokenPair, rateCalculator: RateCalculator) {
     this.tokenPair = tokenPair
-    this.feeCalculator = feeCalculator
+    this.rateCalculator = rateCalculator
   }
 
   computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
     try {
-      const rate = this.feeCalculator.getRate(ts)
-      if (rate === undefined) throw new Error('Unknown rate')
+      const rate = this.rateCalculator.getRate(ts)
+      if (rate === null) throw new Error('Unknown rate')
       let decimals = txn.gasUsed.length
       decimals = decimals + txn.gasPrice.length
       const gasUsed = parseFloat('.' + txn.gasUsed)
@@ -51,7 +51,7 @@ export default class BulkTransactionHandler {
       const feesEth = (gasUsed * gasPrice / offset)
       return {
         feesEth: feesEth.toString(),
-        feesUsdt: this.feeCalculator.getFeesUsd(ts, feesEth),
+        feesUsdt: await this.rateCalculator.getFeesUsd(ts, feesEth),
         rate: rate?.toString()
       }
     } catch (err) {

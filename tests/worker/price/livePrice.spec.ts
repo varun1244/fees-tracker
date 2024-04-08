@@ -1,10 +1,10 @@
 import MockAdapter from 'axios-mock-adapter'
-import FeeCalculator from '../../../src/worker/transformer/feeCalculator'
+import LivePrice from '../../../src/worker/price/livePrice'
 import { expect } from 'chai';
 import axios from 'axios';
 
-describe('FeeCalculator', () => {
-  let feeCalculator = new FeeCalculator()
+describe('livePrice', () => {
+  let livePrice: LivePrice
   let stub: MockAdapter;
   let sad = false
   const receivedData = {
@@ -13,7 +13,7 @@ describe('FeeCalculator', () => {
   }
 
   before(function () {
-    feeCalculator = new FeeCalculator(4)
+    livePrice = new LivePrice(4)
     stub = new MockAdapter(axios)
       .onGet('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
       .reply(200, receivedData)
@@ -21,48 +21,44 @@ describe('FeeCalculator', () => {
 
   it('does not return historical data', function () {
     const ts = Math.floor(new Date().getTime() / 1000)
-    feeCalculator.start()
-    expect(feeCalculator.getRate(ts)).to.be.undefined
-    expect(() => {
-      feeCalculator.getFeesUsd(ts, 100)
-    }).to
-      .throw('No rate found for: ' + ts)
-    feeCalculator.stop()
+    livePrice.start()
+    expect(livePrice.getRate(ts)).to.be.null
+    livePrice.stop()
   })
 
   it('polls for data', function (done) {
     this.timeout(5000)
-    feeCalculator.start()
+    livePrice.start()
     setTimeout(() => {
       const ts = Math.floor(new Date().getTime() / 1000)
-      expect(feeCalculator.getRate(ts)).to.be.eq(100)
-      feeCalculator.stop()
+      expect(livePrice.getRate(ts)).to.be.eq(100)
+      livePrice.stop()
       done()
     }, 2000)
   })
 
   it('evicts old data', function (done) {
     this.timeout(7000)
-    feeCalculator.start()
+    livePrice.start()
     const ts = Math.floor(new Date().getTime() / 1000) + 1
     // With max size = 4
     // At second 4, the data should be available, but not at second 5
     setTimeout(() => {
-      expect(feeCalculator.getRate(ts)).to.be.eq(100)
+      expect(livePrice.getRate(ts)).to.be.eq(100)
       setTimeout(() => {
-        expect(feeCalculator.getRate(ts)).to.be.undefined
-        feeCalculator.stop()
+        expect(livePrice.getRate(ts)).to.be.null
+        livePrice.stop()
         done()
       }, 2000)
     }, 3000)
   })
 
   it('converts eth price with 4 precision', function (done) {
-    feeCalculator.start()
+    livePrice.start()
     const ts = Math.floor(new Date().getTime() / 1000) + 1
-    setTimeout(() => {
-      expect(feeCalculator.getFeesUsd(ts, 0.00045)).to.be.eq('0.0450')
-      feeCalculator.stop()
+    setTimeout(async () => {
+      expect(await livePrice.getFeesUsd(ts, 0.00045)).to.be.eq('0.0450')
+      livePrice.stop()
       done()
     }, 1000)
   })

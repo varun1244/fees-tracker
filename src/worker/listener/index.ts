@@ -1,8 +1,8 @@
 import logger from '../../logger'
+import type Tracker from '../interface/tracker'
 import { type TransactionBlock } from '../transformer/bulkTransactionHandler'
-import EtherscanTracker, { type EtherscanConfig } from './tracker/etherscan'
-import { type InfuraConfig } from './tracker/infura'
-import type Tracker from './tracker/interface'
+import EtherscanTracker, { type EtherscanConfig } from '../tracker/etherscan'
+import { type InfuraConfig } from '../tracker/infura'
 
 export interface TrackerConfig {
   etherscan?: EtherscanConfig

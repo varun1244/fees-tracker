@@ -4,7 +4,7 @@ import type JobQueue from './jobQueue'
 import BulkTransactionHandler, { type TransactionBlock } from './transformer/bulkTransactionHandler'
 
 import TransactionHistory from '../db/models/transactionHistory'
-import FeeCalculator from './transformer/feeCalculator'
+import livePrice from './price/livePrice'
 
 export interface WorkerConfig {
   tokenPair: TokenPair
@@ -13,24 +13,24 @@ export interface WorkerConfig {
 
 export default class Worker {
   jobQueue: JobQueue<TransactionBlock>
-  feeCalculator: FeeCalculator
+  livePrice: livePrice
   tokenPair: TokenPair
-  constructor (config: WorkerConfig) {
+  constructor(config: WorkerConfig) {
     this.jobQueue = config.jobQueue
     this.tokenPair = config.tokenPair
-    this.feeCalculator = new FeeCalculator()
+    this.livePrice = new livePrice()
     this.init()
   }
 
   init = (): void => {
-    this.feeCalculator.start()
+    this.livePrice.start()
     const worker = this.jobQueue.registerWorker('txnBlockHandler', async (job: Job<TransactionBlock[]>) => {
-      const models = await (new BulkTransactionHandler(this.tokenPair, this.feeCalculator)).process(job.data)
+      const models = await (new BulkTransactionHandler(this.tokenPair, this.livePrice)).process(job.data)
       return await TransactionHistory.bulkCreate(models)
     })
 
     process.on('SIGTERM', () => {
-      this.feeCalculator.stop()
+      this.livePrice.stop()
       void worker.close()
     })
   }
