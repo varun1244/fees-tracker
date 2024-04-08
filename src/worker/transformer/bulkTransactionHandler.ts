@@ -1,4 +1,4 @@
-import type TokenPair from '@db/models/tokenPair'
+import type TokenPair from '../../db/models/tokenPair'
 import { type TransactionModel } from '../../db/models/transactionHistory'
 import logger from '../../logger'
 import type FeeCalculator from './feeCalculator'

@@ -1,4 +1,4 @@
-import type TokenPair from '@db/models/tokenPair'
+import type TokenPair from '../../../db/models/tokenPair'
 import axios from 'axios'
 import { Agent } from 'http'
 import { type TrackerCallBack } from '../'

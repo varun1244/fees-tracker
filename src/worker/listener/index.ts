@@ -1,3 +1,4 @@
+import logger from '../../logger'
 import { type TransactionBlock } from '../transformer/bulkTransactionHandler'
 import EtherscanTracker, { type EtherscanConfig } from './tracker/etherscan'
 import { type InfuraConfig } from './tracker/infura'
@@ -19,6 +20,7 @@ export default class LiveTracker {
     config: TrackerConfig,
     callback?: TrackerCallBack
   ) {
+    this.tracker = null
     this.infura = config.infura
     this.etherScan = config.etherScan
     if (this.infura === undefined && this.etherScan === undefined) {
@@ -56,6 +58,7 @@ export default class LiveTracker {
     if (this.etherScan === undefined) {
       throw new Error('Invalid config')
     }
+    logger.info('Using etherscan listener')
     return await new EtherscanTracker(this.etherScan, this.callback).connect()
   }
 }

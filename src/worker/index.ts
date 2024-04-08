@@ -3,7 +3,7 @@ import type TokenPair from '../db/models/tokenPair'
 import type JobQueue from './jobQueue'
 import BulkTransactionHandler, { type TransactionBlock } from './transformer/bulkTransactionHandler'
 
-import TransactionHistory from '@db/models/transactionHistory'
+import TransactionHistory from '../db/models/transactionHistory'
 import FeeCalculator from './transformer/feeCalculator'
 
 export interface WorkerConfig {

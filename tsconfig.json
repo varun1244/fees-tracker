@@ -10,9 +10,6 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@db/*": [
-        "src/db/*"
-      ],
       "*": [
         "node_modules/*"
       ]
