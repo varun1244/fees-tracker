@@ -5,25 +5,25 @@ import { type InfuraConfig } from './tracker/infura'
 import type Tracker from './tracker/interface'
 
 export interface TrackerConfig {
-  etherScan?: EtherscanConfig
+  etherscan?: EtherscanConfig
   infura?: InfuraConfig
 }
 
 export type TrackerCallBack = (block: TransactionBlock[]) => void
 
 export default class LiveTracker {
-  private readonly etherScan
+  private readonly etherscan
   private readonly infura
   private readonly callback: TrackerCallBack | undefined
   private tracker: Tracker | null
-  constructor (
+  constructor(
     config: TrackerConfig,
     callback?: TrackerCallBack
   ) {
     this.tracker = null
     this.infura = config.infura
-    this.etherScan = config.etherScan
-    if (this.infura === undefined && this.etherScan === undefined) {
+    this.etherscan = config.etherscan
+    if (this.infura === undefined && this.etherscan === undefined) {
       throw new Error('No listener config found')
     }
     this.callback = callback
@@ -33,7 +33,7 @@ export default class LiveTracker {
     if (this.tracker !== null) return
     if (this.infura !== undefined) {
       this.tracker = await this.listenWithInfura()
-    } else if (this.etherScan !== undefined) {
+    } else if (this.etherscan !== undefined) {
       this.tracker = await this.listenWithEtherScan()
     }
 
@@ -55,10 +55,10 @@ export default class LiveTracker {
   }
 
   private readonly listenWithEtherScan = async (): Promise<Tracker> => {
-    if (this.etherScan === undefined) {
+    if (this.etherscan === undefined) {
       throw new Error('Invalid config')
     }
     logger.info('Using etherscan listener')
-    return await new EtherscanTracker(this.etherScan, this.callback).connect()
+    return await new EtherscanTracker(this.etherscan, this.callback).connect()
   }
 }

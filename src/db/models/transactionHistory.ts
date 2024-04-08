@@ -33,7 +33,3 @@ TransactionHistory.init({
   tableName: 'txn_history',
   timestamps: true
 })
-
-TransactionHistory.belongsTo(TokenPair, {
-  as: 'tokenPair'
-})

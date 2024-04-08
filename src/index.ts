@@ -35,7 +35,7 @@ const init = async (): Promise<void> => {
     server()
     if (tokenPair !== null) {
       void new LiveTracker({
-        etherScan: {
+        etherscan: {
           tokenPair,
           apiKey: process.env.ETHERSCAN_API_KEY ?? '',
           pollTimeout: 2000

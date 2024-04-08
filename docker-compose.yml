@@ -5,8 +5,8 @@ volumes:
     driver: local
 
 services:
-  postgres:
-    image: postgres:14
+  db:
+    image: timescale/timescaledb:latest-pg14
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -34,14 +34,14 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
-      DB_HOST: postgres
+      DB_HOST: db
       DB_PORT: 5432
       REDIS_URL: redis://redis-service
       ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      - db
   node-app-worker:
     build: .
     volumes:
@@ -53,9 +53,9 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
-      DB_HOST: postgres
+      DB_HOST: db
       DB_PORT: 5432
       REDIS_URL: redis://redis-service
       ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
     depends_on:
-      - postgres
+      - db
