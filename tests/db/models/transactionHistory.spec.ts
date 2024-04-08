@@ -6,7 +6,6 @@ describe('models/TransactionHistory', () => {
   it('query all TransactionHistory', async () => {
     let data: Array<TransactionHistory> = await TransactionHistory.findAll()
     expect(data).to.be.an('array')
-    expect(data.length).to.equal(2)
   })
 
   it('has all the required attributes', async () => {

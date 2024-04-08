@@ -1,4 +1,4 @@
-import type TokenPair from '@db/models/tokenPair'
+import type TokenPair from '../../../db/models/tokenPair'
 import Tracker from './interface'
 import Web3 from 'web3'
 
