@@ -14,9 +14,10 @@ export interface EtherscanConfig {
 }
 
 export interface EtherscanRequest {
-  startblock: number
   page: number
-  limit: number
+  offset: number
+  startblock?: string
+  endblock?: string
 }
 
 export interface EtherscanResponse {
@@ -59,15 +60,21 @@ export default class EtherscanTracker extends Tracker {
     url.searchParams.set('sort', 'desc')
     url.searchParams.set('address', this.address)
     url.searchParams.set('apikey', this.apiKey)
+    url.searchParams.set('offset', '100')
     if (req !== undefined) {
-      url.searchParams.set('startblock', req.startblock.toString())
-      url.searchParams.set('page', req.page.toString())
-      url.searchParams.set('offset', req.limit.toString())
+      Object.keys(req).forEach((key: keyof EtherscanRequest) => {
+        if (req[key] !== undefined && req[key] !== null) {
+          url.searchParams.set(key, req[key]!.toString())
+        }
+      })
     } else if (this.lastBlock !== null) {
       url.searchParams.set('startblock', this.lastBlock.toString())
     } else {
       url.searchParams.set('page', '1')
       url.searchParams.set('offset', '2')
+    }
+    if (parseInt(url.searchParams.get('offset')!) % 2 !== 0) {
+      throw new Error("Offset value should always be an even number")
     }
     return url.href
   }
@@ -103,8 +110,7 @@ export default class EtherscanTracker extends Tracker {
     logger.info('Current block: ' + (this.lastBlock ?? 'NULL'))
     const data = await this.getData()
     if (data?.result?.length !== undefined && data?.result?.length > 0) {
-      const respData = data.result.filter((_val, index) => index % 2)
-      void this.callback?.apply(null, [respData])
+      void this.callback?.apply(null, [data.result])
       this.lastBlock = parseInt(data?.result[0].blockNumber) + 1
     }
   }

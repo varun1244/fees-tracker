@@ -8,7 +8,7 @@ export default class TokenPair extends Model {
   declare contractAddress: string
   declare startBlock: BigInt
 
-  declare getTransactions: HasManyGetAssociationsMixin<TransactionHistory>
+  declare getTransaction: HasManyGetAssociationsMixin<TransactionHistory>
 
   getContractAddress = (): string => {
     return this.contractAddress as string
@@ -32,5 +32,8 @@ TokenPair.init({
   timestamps: true
 })
 
-TokenPair.hasMany(TransactionHistory)
+TokenPair.hasMany(TransactionHistory, {
+  as: 'transaction'
+})
+
 TransactionHistory.belongsTo(TokenPair)
