@@ -1,4 +1,4 @@
-import { DefaultJobOptions, Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq'
+import { type DefaultJobOptions, Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq'
 import type ioRedis from 'ioredis'
 
 export interface JobQueueConfig {
@@ -12,7 +12,7 @@ export default class JobQueue<T> {
   queueName: string
   connection: ioRedis
   listener: QueueEvents
-  constructor(config: JobQueueConfig) {
+  constructor (config: JobQueueConfig) {
     this.queueName = config.queueName
     this.connection = config.connection
     this.queue = new Queue(config.queueName, {
@@ -32,7 +32,7 @@ export default class JobQueue<T> {
     return await this.queue.add(id, data, options)
   }
 
-  getEventListener = () => this.listener
+  getEventListener = (): QueueEvents => this.listener
 
   getQueue = (): Queue<T> => this.queue
 
@@ -44,8 +44,8 @@ export default class JobQueue<T> {
     })
   }
 
-  destroy = () => {
-    this.listener.close()
-    this.queue.close()
+  destroy = (): void => {
+    void this.listener.close()
+    void this.queue.close()
   }
 }

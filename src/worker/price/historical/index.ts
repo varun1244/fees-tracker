@@ -1,17 +1,13 @@
-import BasePrice, { CandleStickType, PriceConfig } from "../base";
+import BasePrice, { type CandleStickType } from '../base'
 
 /**
  * Base class to add new historicalPrice providers
  * Currently using coinCompare.
- * 
+ *
  * Similarly, we can create `binance.ts` which extends this class and implement the `getCandleStickData` method
  */
 export default abstract class HistoricalPrice<T> extends BasePrice<T> {
-  constructor(config: PriceConfig) {
-    super(config)
-  }
-
-  protected abstract getCandleStickData(timestamp: number): Promise<CandleStickType | null>
+  protected abstract getCandleStickData (timestamp: number): Promise<CandleStickType | null>
 
   average = (data: CandleStickType): number => {
     return (data.open + data.high + data.low + data.close) / 4
@@ -22,11 +18,11 @@ export default abstract class HistoricalPrice<T> extends BasePrice<T> {
     return candleStick === null ? null : this.average(candleStick)
   }
 
-  start = () => {
+  start = (): void => {
     // No op
   }
 
-  stop = () => {
+  stop = (): void => {
     // No op
   }
 }

@@ -1,8 +1,8 @@
-import axios from "axios"
-import { Agent } from "http"
-import logger from "../../logger"
+import axios from 'axios'
+import { Agent } from 'http'
+import logger from '../../logger'
 
-export type CandleStickType = {
+export interface CandleStickType {
   time: number
   open: number
   high: number
@@ -10,7 +10,7 @@ export type CandleStickType = {
   close: number
 }
 
-export type PriceConfig = {
+export interface PriceConfig {
   host: string
 }
 
@@ -19,16 +19,16 @@ export default abstract class BasePrice<T> {
   host: string
   agent: any
 
-  constructor(config: PriceConfig) {
+  constructor (config: PriceConfig) {
     this.agent = new Agent({
       keepAlive: true
     })
     this.host = config.host
   }
 
-  abstract getRate(timestamp: number): Promise<number | null>
-  abstract start(): void
-  abstract stop(): void
+  abstract getRate (timestamp: number): Promise<number | null>
+  abstract start (): void
+  abstract stop (): void
 
   getFeesUsd = async (timestamp: number, fessEth: number, price?: number): Promise<string> => {
     const rate = price ?? await this.getRate(timestamp)
@@ -43,7 +43,7 @@ export default abstract class BasePrice<T> {
       this.waiting = true
       const response = await axios.get(url, {
         httpAgent: this.agent,
-        headers: { "Content-Type": "application/json" }
+        headers: { 'Content-Type': 'application/json' }
       })
       this.waiting = false
       return response.data

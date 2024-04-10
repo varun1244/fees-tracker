@@ -1,7 +1,8 @@
-import TokenPair from "../../../db/models/tokenPair"
-import TransactionHistory from "../../../db/models/transactionHistory"
-import EtherscanTracker, { EtherscanRequest } from "../../tracker/etherscan"
-import { TransactionBlock } from "../../transformer/bulkTransactionHandler"
+import type TokenPair from '../../../db/models/tokenPair'
+import type TransactionHistory from '../../../db/models/transactionHistory'
+import { type EtherscanRequest } from '../../tracker/etherscan'
+import type EtherscanTracker from '../../tracker/etherscan'
+import { type TransactionBlock } from '../../transformer/bulkTransactionHandler'
 
 /**
  * Class that handles the fetching of historical transactions and finding the missing ones from the DB.
@@ -10,7 +11,7 @@ export default class HistoricalTransactionUtils {
   etherscan: EtherscanTracker
   tokenPair: TokenPair
   offset: number
-  constructor(tokenPair: TokenPair, etherscan: EtherscanTracker, batchSize?: number) {
+  constructor (tokenPair: TokenPair, etherscan: EtherscanTracker, batchSize?: number) {
     this.tokenPair = tokenPair
     this.etherscan = etherscan
     this.offset = batchSize ?? 4
@@ -19,20 +20,20 @@ export default class HistoricalTransactionUtils {
   getBatchParams = async (): Promise<EtherscanRequest> => {
     const lowestAvailableTxn = await this.getLowestBlock()
     let lowestAvailableBlock: number
-    let params: EtherscanRequest = {
+    const params: EtherscanRequest = {
       page: 1,
       offset: this.offset
     }
     if (lowestAvailableTxn !== null) {
-      lowestAvailableBlock = parseInt((lowestAvailableTxn.get('blockNumber') as BigInt).toString())
+      lowestAvailableBlock = parseInt((lowestAvailableTxn.get('blockNumber') as bigint).toString())
       params.endblock = (lowestAvailableBlock - 1).toString()
     }
     return params
   }
 
   getNewBatch = async (): Promise<TransactionBlock[]> => {
-    let params = await this.getBatchParams()
-    let data = await this.etherscan.getData(params)
+    const params = await this.getBatchParams()
+    const data = await this.etherscan.getData(params)
     if (data?.result?.length !== undefined && data?.result?.length > 0) {
       return data.result.reverse()
     }
@@ -40,8 +41,8 @@ export default class HistoricalTransactionUtils {
   }
 
   getLowestBlock = async (): Promise<TransactionHistory | null> => {
-    let resp = await this.tokenPair.getTransaction({
-      order: [["blockNumber", "ASC"]],
+    const resp = await this.tokenPair.getTransaction({
+      order: [['blockNumber', 'ASC']],
       limit: 1
     })
     if (resp.length > 0) {

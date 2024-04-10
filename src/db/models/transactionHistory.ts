@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize'
 import dbService from '../index'
-import TokenPair from './tokenPair'
 
 export interface TransactionModel {
   txnId: string
@@ -9,7 +8,7 @@ export interface TransactionModel {
   timestamp: Date
   details: Record<string, any>
   tokenPairId: number
-  blockNumber: BigInt
+  blockNumber: bigint
 }
 
 export default class TransactionHistory extends Model<TransactionModel> { }

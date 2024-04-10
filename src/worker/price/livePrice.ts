@@ -13,7 +13,7 @@ export default class LivePrice extends BasePrice<BinanceResp> {
   private readonly maxSize
   private poll: NodeJS.Timeout | null = null
   static BINANCE_HOST = 'https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT'
-  constructor(maxSize?: number) {
+  constructor (maxSize?: number) {
     super({
       host: LivePrice.BINANCE_HOST
     })
@@ -50,7 +50,7 @@ export default class LivePrice extends BasePrice<BinanceResp> {
     }
   }
 
-  private cacheData(data: BinanceResp, timestamp?: number): void {
+  private cacheData (data: BinanceResp, timestamp?: number): void {
     const current = timestamp ?? Math.ceil(new Date().getTime() / 1000)
     this.timeValue.set(current, parseFloat(data.price))
     // Ensure cache data doesn't grow out of bounds

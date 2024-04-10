@@ -16,7 +16,7 @@ export default class LiveTracker {
   private readonly infura
   private readonly callback: TrackerCallBack | undefined
   private tracker: Tracker | null
-  constructor(
+  constructor (
     config: TrackerConfig,
     callback?: TrackerCallBack
   ) {

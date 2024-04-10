@@ -4,7 +4,7 @@ import TokenPair from './db/models/tokenPair'
 import logger from './logger'
 import redisOption from './config/redis'
 import server from './server'
-import Worker, { WorkerConfig } from './worker'
+import Worker, { type WorkerConfig } from './worker'
 import JobQueue from './worker/jobQueue'
 import LiveTracker from './worker/listener/liveTxn'
 import HistoricalTransactionManager from './worker/listener/historicalTransaction'
@@ -45,11 +45,11 @@ workerTypes.set('old', {
   priceManager: new CryptoComparePrice()
 })
 
-const initWorkers = (tokenPair: TokenPair | null) => {
+const initWorkers = (tokenPair: TokenPair | null): void => {
   if (tokenPair === null) {
     return
   }
-  const allowedWorkers = process.env.WORKERS ?? 'live,old'
+  const allowedWorkers: string = process.env.WORKERS ?? 'live,old'
   allowedWorkers.split(',').forEach((x: string) => {
     if (workerTypes.has(x)) {
       new Worker({
@@ -73,17 +73,17 @@ const init = async (): Promise<void> => {
     server()
     if (tokenPair !== null) {
       void new LiveTracker({
-        etherscan: EtherScanConfig(tokenPair),
+        etherscan: EtherScanConfig(tokenPair)
       }, (data: TransactionBlock[]) => {
         void liveQueue.addJob('newJobs', data)
       }).initListener()
 
       const histTxnManager = new HistoricalTransactionManager({
-        tokenPair: tokenPair,
+        tokenPair,
         jobQueue: oldTxnQueue,
         etherscan: EtherScanConfig(tokenPair)
       })
-      histTxnManager.start()
+      void await histTxnManager.start()
 
       oldTxnQueue.getEventListener().on('completed', () => {
         setTimeout(histTxnManager.start, 10000)

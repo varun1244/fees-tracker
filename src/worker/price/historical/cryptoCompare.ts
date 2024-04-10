@@ -1,21 +1,21 @@
-import HistoricalPrice from "."
-import { CandleStickType } from "../base"
+import HistoricalPrice from '.'
+import { type CandleStickType } from '../base'
 
-export type CryptoCompareResponse = {
-  "Response": string
-  "Message": string
-  "HasWarning": boolean
-  "Type": number
-  "Data": {
-    "Aggregated": boolean
-    "TimeFrom": number
-    "TimeTo": number
-    "Data": CandleStickType[]
+export interface CryptoCompareResponse {
+  'Response': string
+  'Message': string
+  'HasWarning': boolean
+  'Type': number
+  'Data': {
+    'Aggregated': boolean
+    'TimeFrom': number
+    'TimeTo': number
+    'Data': CandleStickType[]
   }
 }
 
-const HOST = "https://min-api.cryptocompare.com/data/v2/histominute?fsym=ETH&tsym=USDT"
-const TS_PARAM = "toTs"
+const HOST = 'https://min-api.cryptocompare.com/data/v2/histominute?fsym=ETH&tsym=USDT'
+const TS_PARAM = 'toTs'
 
 export {
   HOST,
@@ -25,7 +25,7 @@ export {
 export default class CryptoComparePrice extends HistoricalPrice<CryptoCompareResponse> {
   timeValue: Map<number, CandleStickType>
   asyncReq: any
-  constructor(limit?: number) {
+  constructor (limit?: number) {
     const url = new URL(HOST)
     url.searchParams.set('limit', (limit ?? 1440).toString())
     super({
@@ -35,8 +35,8 @@ export default class CryptoComparePrice extends HistoricalPrice<CryptoCompareRes
   }
 
   // Note: The ts expected is in minutes
-  private generateData = (timestamp: number) => {
-    if (this.asyncReq) return this.asyncReq
+  private readonly generateData = async (timestamp: number): Promise<Map<number, number>> => {
+    if (this.asyncReq !== null) return this.asyncReq
     const url = new URL(HOST)
     url.searchParams.set(TS_PARAM, timestamp.toString())
     this.asyncReq = this.getData(url.href).then(data => {
@@ -54,7 +54,7 @@ export default class CryptoComparePrice extends HistoricalPrice<CryptoCompareRes
     return this.asyncReq
   }
 
-  normalizeTs = (ts: number) => {
+  normalizeTs = (ts: number): number => {
     return (ts - (ts % 60))
   }
 

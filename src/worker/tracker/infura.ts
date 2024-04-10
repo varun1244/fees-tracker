@@ -13,7 +13,7 @@ export default class InfuraTracker extends Tracker {
   contractAddress: string
   web3: Web3
 
-  constructor(config: InfuraConfig) {
+  constructor (config: InfuraConfig) {
     super()
     this.contractAddress = config.tokenPair.getContractAddress()
     this.web3 = new Web3(new Web3.providers.WebsocketProvider(`${config.host}/${config.apiKey}`))

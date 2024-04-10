@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up (queryInterface, Sequelize) {
     try {
       await queryInterface.bulkInsert('txn_history', [{
         txn_id: '0xfb6059b8a759783217d35797d1e98a3496aae0e797e271f4d34116ae54cbf133',
@@ -40,7 +40,7 @@ module.exports = {
     }
   },
 
-  async down(queryInterface, Sequelize) {
+  async down (queryInterface, Sequelize) {
     await queryInterface.bulkDelete('txn_history', null, {})
   }
 }

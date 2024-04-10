@@ -1,7 +1,7 @@
 import type TokenPair from '../../db/models/tokenPair'
 import { type TransactionModel } from '../../db/models/transactionHistory'
 import logger from '../../logger'
-import BasePrice from '../price/base'
+import type BasePrice from '../price/base'
 
 export interface TransactionBlock {
   blockNumber: string
@@ -35,12 +35,12 @@ export interface Fees {
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
   rateCalculator: BasePrice<any>
-  constructor(tokenPair: TokenPair, rateCalculator: BasePrice<any>) {
+  constructor (tokenPair: TokenPair, rateCalculator: BasePrice<any>) {
     this.tokenPair = tokenPair
     this.rateCalculator = rateCalculator
   }
 
-  private mathOp = (val1: string, val2: string, denom = 18) => {
+  private readonly mathOp = (val1: string, val2: string, denom = 18): { op1: number, op2: number, offset: number } => {
     let decimals = val1.length
     decimals = decimals + val2.length
     const op1 = parseFloat('.' + val1)
@@ -94,10 +94,10 @@ export default class BulkTransactionHandler {
 
   /**
    * Method to calculate the SWAP rate of the transaction and filter out one of the entries
-   * @param data 
+   * @param data
    */
-  mergeAndFilter = (data: TransactionBlock[]) => {
-    let resp = []
+  mergeAndFilter = (data: TransactionBlock[]): Array<{ swapRate: string, blockNumber: string, timeStamp: string, hash: string, nonce: string, blockHash: string, from: string, contractAddress: string, to: string, value: string, tokenName: string, tokenSymbol: string, tokenDecimal: string, transactionIndex: string, gas: string, gasPrice: string, gasUsed: string, cumulativeGasUsed: string, input: string, confirmations: string }> => {
+    const resp = []
     for (let i = 0; i < data.length; i = i + 2) {
       const { op1, op2, offset } = this.mathOp(data[i].value, data[i + 1].value, 24)
       resp.push({
@@ -109,7 +109,6 @@ export default class BulkTransactionHandler {
   }
 
   process = async (data: TransactionBlock[]): Promise<TransactionModel[]> => {
-
     const processed = await Promise.all(this.mergeAndFilter(data).map(this.parseTxn))
     return processed.filter(txn => txn !== null) as TransactionModel[]
   }

@@ -37,7 +37,7 @@ export default class EtherscanTracker extends Tracker {
   private readonly pollTimeout: number
   private poller: NodeJS.Timeout | null = null
   callback: TrackerCallBack | undefined
-  constructor(
+  constructor (
     config: EtherscanConfig,
     callback?: TrackerCallBack
   ) {
@@ -64,7 +64,7 @@ export default class EtherscanTracker extends Tracker {
     if (req !== undefined) {
       Object.keys(req).forEach((key: keyof EtherscanRequest) => {
         if (req[key] !== undefined && req[key] !== null) {
-          url.searchParams.set(key, req[key]!.toString())
+          url.searchParams.set(key, (req[key] ?? '').toString())
         }
       })
     } else if (this.lastBlock !== null) {
@@ -73,8 +73,8 @@ export default class EtherscanTracker extends Tracker {
       url.searchParams.set('page', '1')
       url.searchParams.set('offset', '2')
     }
-    if (parseInt(url.searchParams.get('offset')!) % 2 !== 0) {
-      throw new Error("Offset value should always be an even number")
+    if (parseInt(url.searchParams.get('offset') ?? '0') % 2 !== 0) {
+      throw new Error('Offset value should always be an even number')
     }
     return url.href
   }
@@ -115,7 +115,7 @@ export default class EtherscanTracker extends Tracker {
     }
   }
 
-  connect = () => {
+  connect = (): void => {
     if (this.poller === null) {
       logger.info('Poll frequency: ', this.pollTimeout)
       this.poller = setInterval(this.pollFetchData, this.pollTimeout)

@@ -1,10 +1,10 @@
-import TokenPair from "../../../db/models/tokenPair"
-import JobQueue from "../../jobQueue"
-import EtherscanTracker, { type EtherscanConfig } from "../../tracker/etherscan"
-import { TransactionBlock } from "../../transformer/bulkTransactionHandler"
-import HistoricalTransactionUtils from "./utils"
+import type TokenPair from '../../../db/models/tokenPair'
+import type JobQueue from '../../jobQueue'
+import EtherscanTracker, { type EtherscanConfig } from '../../tracker/etherscan'
+import { type TransactionBlock } from '../../transformer/bulkTransactionHandler'
+import HistoricalTransactionUtils from './utils'
 
-export type HistoricalTransactionManagerConfig = {
+export interface HistoricalTransactionManagerConfig {
   tokenPair: TokenPair
   etherscan: EtherscanConfig
   jobQueue: JobQueue<TransactionBlock>
@@ -20,7 +20,7 @@ export default class HistoricalTransactionManager {
   jobQueue: JobQueue<TransactionBlock>
   utils: HistoricalTransactionUtils
   counter: number
-  constructor(config: HistoricalTransactionManagerConfig) {
+  constructor (config: HistoricalTransactionManagerConfig) {
     this.tokenPair = config.tokenPair
     this.etherscan = config.etherscan
     this.jobQueue = config.jobQueue
@@ -29,9 +29,9 @@ export default class HistoricalTransactionManager {
     this.counter = 0
   }
 
-  scheduleJob = async () => {
+  scheduleJob = async (): Promise<void> => {
     const blocks = await this.utils.getNewBatch()
-    this.jobQueue.addJob("backfillJob", blocks)
+    void this.jobQueue.addJob('backfillJob', blocks)
   }
 
   start = async (): Promise<boolean> => {
@@ -40,7 +40,7 @@ export default class HistoricalTransactionManager {
       this.stop()
       return !completed
     }
-    this.scheduleJob()
+    void this.scheduleJob()
     return true
   }
 

@@ -3,15 +3,15 @@ import dbService from '../index'
 import TransactionHistory from './transactionHistory'
 
 export default class TokenPair extends Model {
-  declare id: number;
-  declare name: string;
+  declare id: number
+  declare name: string
   declare contractAddress: string
-  declare startBlock: BigInt
+  declare startBlock: bigint
 
   declare getTransaction: HasManyGetAssociationsMixin<TransactionHistory>
 
   getContractAddress = (): string => {
-    return this.contractAddress as string
+    return this.contractAddress
   }
 }
 
