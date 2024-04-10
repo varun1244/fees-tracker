@@ -13,5 +13,9 @@ COPY ./tsconfig.json /app/tsconfig.json
 COPY ./.eslintrc.json /app/.eslintrc.json
 
 COPY ./tests /app/tests
+COPY ./src /app/src
+
+RUN yarn build
+
 ENTRYPOINT [ "yarn" ]
-CMD [ "dev" ]
+CMD [ "start:prod" ]

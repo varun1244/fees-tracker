@@ -3,7 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('token_pair', null, {})
     try {
       await queryInterface.bulkInsert('token_pair', [{
         id: 1,
