@@ -19,18 +19,18 @@ describe('Etherscan', () => {
     sinon.stub(tokenPair, 'getContractAddress').callsFake(() => dummyToken)
     const config: EtherscanConfig = {
       apiKey: '1234',
-      pollTimeout: 1000,
+      pollTimeout: 900,
       tokenPair: tokenPair
     }
 
     stub = new MockAdapter(axios)
-      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&page=1&offset=2')
+      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&offset=2&page=1')
       .reply(200, { status: '1', result: receivedData })
-      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&startblock=19605213')
+      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&offset=100&startblock=19605213')
       .reply(200, { status: '0', result: [], message: 'No transactions found' })
-      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&startblock=1&page=1&offset=1')
-      .reply(404, { error: "Not found" })
-      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&startblock=2&page=1&offset=1')
+      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&offset=2&startblock=1&page=1')
+      .reply(400, { error: "Bad request" })
+      .onGet('https://api.etherscan.io/api?module=account&action=tokentx&sort=desc&address=0x123456689&apikey=1234&offset=2&startblock=2&page=1')
       .reply(200, { status: '0', message: 'NOTOK' })
 
     instance = new Etherscan(config)
@@ -49,17 +49,12 @@ describe('Etherscan', () => {
     expect(urlSearch.get('startblock')).to.be.null
   })
 
-  it('updates block address after first get', function (done) {
+  it('updates block address after first get', async function () {
     this.timeout(3000)
-    instance.connect()
-    setTimeout(() => {
-      let urlSearch = new URLSearchParams(instance.getUrl())
-      expect(urlSearch.get('startblock')).to.not.be.null
-      expect(urlSearch.get('page')).to.be.null
-      expect(urlSearch.get('offset')).to.be.null
-      instance.disconnect()
-      done()
-    }, 1000)
+    await instance.pollFetchData()
+    let urlSearch = new URLSearchParams(instance.getUrl())
+    expect(urlSearch.get('startblock')).to.not.be.null
+    expect(urlSearch.get('page')).to.be.null
   })
 
   it('does not update when no new transaction found', (done) => {
@@ -77,9 +72,9 @@ describe('Etherscan', () => {
 
   it('handles fetching of custom blocks', () => {
     let urlSearch = new URLSearchParams(instance.getUrl({
-      startblock: 1,
+      startblock: '1',
       page: 100,
-      limit: 100
+      offset: 100
     }))
     expect(urlSearch.get('startblock')).to.not.be.equal(1)
     expect(urlSearch.get('page')).to.not.be.equal(100)
@@ -88,18 +83,18 @@ describe('Etherscan', () => {
 
   it('handles API error', async () => {
     let resp = await instance.getData({
-      startblock: 1,
+      startblock: '1',
       page: 1,
-      limit: 1
+      offset: 2
     })
     expect(resp).to.be.null
   })
 
   it('handles request error', async () => {
     let resp = await instance.getData({
-      startblock: 2,
+      startblock: '2',
       page: 1,
-      limit: 1
+      offset: 2
     })
     expect(resp).to.be.null
   })

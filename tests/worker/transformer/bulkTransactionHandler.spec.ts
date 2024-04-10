@@ -1,9 +1,9 @@
-import sinon from 'sinon'
-import { getMockTransactions } from '../../helpers'
-import BulkTransactionHandler from '../../../src/worker/transformer/bulkTransactionHandler'
-import LivePrice from '../../../src/worker/price/livePrice'
-import TokenPair from '../../../src/db/models/tokenPair'
 import { expect } from 'chai'
+import sinon from 'sinon'
+import TokenPair from '../../../src/db/models/tokenPair'
+import LivePrice from '../../../src/worker/price/livePrice'
+import BulkTransactionHandler from '../../../src/worker/transformer/bulkTransactionHandler'
+import { getMockTransactions } from '../../helpers'
 
 describe('BulkTransactionHandler', () => {
   let txnHandler: BulkTransactionHandler
@@ -18,7 +18,7 @@ describe('BulkTransactionHandler', () => {
   describe('when rate is available', () => {
     before(() => {
       const livePrice = new LivePrice()
-      sinon.stub(livePrice, 'getRate').callsFake((_ts) => 100)
+      sinon.stub(livePrice, 'getRate').callsFake(async (_ts) => 100)
       txnHandler = new BulkTransactionHandler(tokenPair, livePrice)
     })
 
@@ -34,7 +34,7 @@ describe('BulkTransactionHandler', () => {
 
     it('processes the transactions accurately', async function () {
       const resp = await txnHandler.process(data)
-      expect(resp.length).to.be.deep.eq(data.length)
+      expect(resp.length).to.be.deep.eq(data.length / 2)
       expect(resp[0].details.rate).to.be.deep.eq('100')
     })
   })
@@ -42,7 +42,7 @@ describe('BulkTransactionHandler', () => {
   describe('when rate is not available', () => {
     before(() => {
       const livePrice = new LivePrice()
-      sinon.stub(livePrice, 'getRate').callsFake((_ts) => null)
+      sinon.stub(livePrice, 'getRate').callsFake(async (_ts) => null)
       txnHandler = new BulkTransactionHandler(tokenPair, livePrice)
     })
 

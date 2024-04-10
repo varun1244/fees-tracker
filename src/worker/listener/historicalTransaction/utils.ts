@@ -16,7 +16,7 @@ export default class HistoricalTransactionUtils {
     this.offset = batchSize ?? 4
   }
 
-  getNewBatch = async (): Promise<TransactionBlock[]> => {
+  getBatchParams = async (): Promise<EtherscanRequest> => {
     const lowestAvailableTxn = await this.getLowestBlock()
     let lowestAvailableBlock: number
     let params: EtherscanRequest = {
@@ -24,10 +24,14 @@ export default class HistoricalTransactionUtils {
       offset: this.offset
     }
     if (lowestAvailableTxn !== null) {
-      lowestAvailableBlock = lowestAvailableTxn.get('blockNumber') as number
-      lowestAvailableBlock = lowestAvailableBlock - 1
+      lowestAvailableBlock = parseInt((lowestAvailableTxn.get('blockNumber') as BigInt).toString())
       params.endblock = (lowestAvailableBlock - 1).toString()
     }
+    return params
+  }
+
+  getNewBatch = async (): Promise<TransactionBlock[]> => {
+    let params = await this.getBatchParams()
     let data = await this.etherscan.getData(params)
     if (data?.result?.length !== undefined && data?.result?.length > 0) {
       return data.result.reverse()
@@ -35,7 +39,7 @@ export default class HistoricalTransactionUtils {
     return []
   }
 
-  getLowestBlock = async () => {
+  getLowestBlock = async (): Promise<TransactionHistory | null> => {
     let resp = await this.tokenPair.getTransaction({
       order: [["blockNumber", "ASC"]],
       limit: 1
@@ -47,12 +51,12 @@ export default class HistoricalTransactionUtils {
     }
   }
 
-  isStartBlock = (lowestBlock: TransactionHistory) => {
+  isStartBlock = (lowestBlock: TransactionHistory): boolean => {
     const startBlock = this.tokenPair.startBlock
     return (lowestBlock !== null && startBlock === lowestBlock?.get('blockNumber'))
   }
 
-  isStartBlockCompleted = async () => {
+  isStartBlockCompleted = async (): Promise<boolean> => {
     const startBlock = this.tokenPair.startBlock
     const txns = await this.tokenPair.getTransaction({
       where: {

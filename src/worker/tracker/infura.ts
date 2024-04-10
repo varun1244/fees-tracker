@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import type TokenPair from '../../db/models/tokenPair'
-import Tracker from '../interface/tracker'
+import Tracker from './interface'
 
 export interface InfuraConfig {
   tokenPair: TokenPair

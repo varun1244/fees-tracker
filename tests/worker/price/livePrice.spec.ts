@@ -2,6 +2,7 @@ import MockAdapter from 'axios-mock-adapter'
 import LivePrice from '../../../src/worker/price/livePrice'
 import { expect } from 'chai';
 import axios from 'axios';
+import assert from 'assert';
 
 describe('livePrice', () => {
   let livePrice: LivePrice
@@ -19,19 +20,19 @@ describe('livePrice', () => {
       .reply(200, receivedData)
   });
 
-  it('does not return historical data', function () {
+  it('does not return historical data', async () => {
     const ts = Math.floor(new Date().getTime() / 1000)
     livePrice.start()
-    expect(livePrice.getRate(ts)).to.be.null
+    expect(await livePrice.getRate(ts)).to.be.null
     livePrice.stop()
   })
 
   it('polls for data', function (done) {
     this.timeout(5000)
     livePrice.start()
-    setTimeout(() => {
+    setTimeout(async () => {
       const ts = Math.floor(new Date().getTime() / 1000)
-      expect(livePrice.getRate(ts)).to.be.eq(100)
+      expect(await livePrice.getRate(ts)).to.be.eq(100)
       livePrice.stop()
       done()
     }, 2000)
@@ -43,10 +44,10 @@ describe('livePrice', () => {
     const ts = Math.floor(new Date().getTime() / 1000) + 1
     // With max size = 4
     // At second 4, the data should be available, but not at second 5
-    setTimeout(() => {
-      expect(livePrice.getRate(ts)).to.be.eq(100)
-      setTimeout(() => {
-        expect(livePrice.getRate(ts)).to.be.null
+    setTimeout(async () => {
+      expect(await livePrice.getRate(ts)).to.be.eq(100)
+      setTimeout(async () => {
+        expect(await livePrice.getRate(ts)).to.be.null
         livePrice.stop()
         done()
       }, 2000)
@@ -61,5 +62,28 @@ describe('livePrice', () => {
       livePrice.stop()
       done()
     }, 1000)
+  })
+
+  it('throws an error when the price is not available', function () {
+    const ts = Math.floor(new Date().getTime() / 1000) + 10000
+    assert.rejects(async () => {
+      await livePrice.getFeesUsd(ts, 100)
+    }, Error, 'No rate found for: ' + ts)
+  })
+
+  describe('API errors', () => {
+    before(function () {
+      livePrice = new LivePrice(4)
+      stub = new MockAdapter(axios)
+        .onGet('https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT')
+        .reply(400)
+    })
+
+    it('returns null when API returns an error', async function () {
+      const ts = Math.floor(new Date().getTime() / 1000) + 10000
+      assert.rejects(async () => {
+        await livePrice.getFeesUsd(ts, 100)
+      }, Error, 'No rate found for: ' + ts)
+    })
   })
 })

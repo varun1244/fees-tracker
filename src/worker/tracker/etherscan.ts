@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { Agent } from 'http'
-import { type TrackerCallBack } from '../listener'
+import { type TrackerCallBack } from '../listener/liveTxn'
 import type TokenPair from '../../db/models/tokenPair'
 import logger from '../../logger'
-import Tracker from '../interface/tracker'
+import Tracker from './interface'
 import { type TransactionBlock } from '../transformer/bulkTransactionHandler'
 
 export interface EtherscanConfig {
@@ -104,7 +104,7 @@ export default class EtherscanTracker extends Tracker {
     return null
   }
 
-  private readonly pollFetchData = async (): Promise<void> => {
+  pollFetchData = async (): Promise<void> => {
     // Skip if a request is already in progress
     if (this.waiting) return
     logger.info('Current block: ' + (this.lastBlock ?? 'NULL'))
@@ -115,12 +115,11 @@ export default class EtherscanTracker extends Tracker {
     }
   }
 
-  connect = async (): Promise<this> => {
+  connect = () => {
     if (this.poller === null) {
       logger.info('Poll frequency: ', this.pollTimeout)
       this.poller = setInterval(this.pollFetchData, this.pollTimeout)
     }
-    return this
   }
 
   disconnect = async (): Promise<void> => {

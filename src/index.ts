@@ -2,11 +2,11 @@ import EtherScanConfig from './config/etherscan.config'
 import dbService from './db'
 import TokenPair from './db/models/tokenPair'
 import logger from './logger'
-import redisOption from './redis'
+import redisOption from './config/redis'
 import server from './server'
 import Worker, { WorkerConfig } from './worker'
 import JobQueue from './worker/jobQueue'
-import LiveTracker from './worker/listener'
+import LiveTracker from './worker/listener/liveTxn'
 import HistoricalTransactionManager from './worker/listener/historicalTransaction'
 import CryptoComparePrice from './worker/price/historical/cryptoCompare'
 import LivePrice from './worker/price/livePrice'
@@ -78,11 +78,16 @@ const init = async (): Promise<void> => {
         void liveQueue.addJob('newJobs', data)
       }).initListener()
 
-      void new HistoricalTransactionManager({
+      const histTxnManager = new HistoricalTransactionManager({
         tokenPair: tokenPair,
         jobQueue: oldTxnQueue,
         etherscan: EtherScanConfig(tokenPair)
-      }).start()
+      })
+      histTxnManager.start()
+
+      oldTxnQueue.getEventListener().on('completed', () => {
+        setTimeout(histTxnManager.start, 10000)
+      })
     }
   }
 }

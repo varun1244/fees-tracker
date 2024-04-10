@@ -1,3 +1,5 @@
+import TokenPair from "../../src/db/models/tokenPair";
+import TransactionHistory from "../../src/db/models/transactionHistory";
 import { TransactionBlock } from "../../src/worker/transformer/bulkTransactionHandler";
 
 export function getMockTransactions(): TransactionBlock[] {
@@ -44,4 +46,20 @@ export function getMockTransactions(): TransactionBlock[] {
       "confirmations": "1"
     }
   ]
+}
+
+export function getMockTxnByToken(token: TokenPair, startBlock: number = 0, endblock: number): TransactionHistory[] {
+  const data: TransactionHistory[] = []
+  for (let i = startBlock; i < endblock; i++) {
+    data.push(new TransactionHistory({
+      txnId: 'txn_id_' + i,
+      feesEth: '0.01',
+      feesUsdt: '30',
+      timestamp: new Date(),
+      details: {},
+      tokenPairId: token.get('id'),
+      blockNumber: BigInt(i)
+    }))
+  }
+  return data
 }

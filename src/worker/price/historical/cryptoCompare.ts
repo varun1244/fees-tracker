@@ -14,35 +14,52 @@ export type CryptoCompareResponse = {
   }
 }
 
-const HOST = "https://min-api.cryptocompare.com/data/v2/histominute?fsym=ETH&tsym=USDT&limit=2"
+const HOST = "https://min-api.cryptocompare.com/data/v2/histominute?fsym=ETH&tsym=USDT"
 const TS_PARAM = "toTs"
+
+export {
+  HOST,
+  TS_PARAM
+}
 
 export default class CryptoComparePrice extends HistoricalPrice<CryptoCompareResponse> {
   timeValue: Map<number, CandleStickType>
-  constructor() {
+  asyncReq: any
+  constructor(limit?: number) {
+    const url = new URL(HOST)
+    url.searchParams.set('limit', (limit ?? 1440).toString())
     super({
-      host: HOST
+      host: url.href
     })
     this.timeValue = new Map()
   }
 
-  private generateData = async (timestamp: number) => {
+  // Note: The ts expected is in minutes
+  private generateData = (timestamp: number) => {
+    if (this.asyncReq) return this.asyncReq
     const url = new URL(HOST)
     url.searchParams.set(TS_PARAM, timestamp.toString())
-    let data = await this.getData(url.href)
-    if (data === null) {
-      return
-    }
-    this.timeValue = new Map()
-    data.Data.Data.forEach(x => {
-      const key = Math.floor(x.time / 1000)
-      this.timeValue.set(key, x)
+    this.asyncReq = this.getData(url.href).then(data => {
+      if (data === null) {
+        return
+      }
+      this.timeValue = new Map()
+      data.Data.Data.forEach(x => {
+        const key = this.normalizeTs(x.time)
+        this.timeValue.set(key, x)
+      })
+      this.asyncReq = null
+      return this.timeValue
     })
-    return this.timeValue
+    return this.asyncReq
   }
 
-  protected async getCandleStickData(timestamp: number): Promise<CandleStickType | null> {
-    const parsedTs = Math.floor(timestamp / 1000)
+  normalizeTs = (ts: number) => {
+    return (ts - (ts % 60))
+  }
+
+  protected getCandleStickData = async (timestamp: number): Promise<CandleStickType | null> => {
+    const parsedTs = this.normalizeTs(timestamp)
     if (!this.timeValue.has(parsedTs)) {
       await this.generateData(timestamp)
     }

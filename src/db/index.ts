@@ -9,7 +9,7 @@ const config = require('./config.js')[env] as Options
 class DBProvider {
   public sequelize: Sequelize
 
-  constructor () {
+  constructor() {
     if (config?.database == null || config.username == null) {
       throw new Error('Invalid DB configuration')
     }

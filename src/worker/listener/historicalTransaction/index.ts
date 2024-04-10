@@ -1,7 +1,5 @@
 import TokenPair from "../../../db/models/tokenPair"
-import logger from "../../../logger"
 import JobQueue from "../../jobQueue"
-import { TrackerCallBack } from ".."
 import EtherscanTracker, { type EtherscanConfig } from "../../tracker/etherscan"
 import { TransactionBlock } from "../../transformer/bulkTransactionHandler"
 import HistoricalTransactionUtils from "./utils"
@@ -34,10 +32,6 @@ export default class HistoricalTransactionManager {
   scheduleJob = async () => {
     const blocks = await this.utils.getNewBatch()
     this.jobQueue.addJob("backfillJob", blocks)
-
-    this.jobQueue.getEventListener().on('completed', () => {
-      setTimeout(this.start, 10000)
-    })
   }
 
   start = async (): Promise<boolean> => {
