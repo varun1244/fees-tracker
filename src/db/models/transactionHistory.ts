@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize'
 import dbService from '../index'
-import TokenPair from './tokenPair'
 
 export interface TransactionModel {
   txnId: string
@@ -8,7 +7,8 @@ export interface TransactionModel {
   feesUsdt: string
   timestamp: Date
   details: Record<string, any>
-  tokenPairId: string
+  tokenPairId: number
+  blockNumber: bigint
 }
 
 export default class TransactionHistory extends Model<TransactionModel> { }
@@ -26,14 +26,11 @@ TransactionHistory.init({
   tokenPairId: {
     type: DataTypes.INTEGER,
     field: 'token_pair_id'
-  }
+  },
+  blockNumber: DataTypes.BIGINT
 }, {
   sequelize: dbService.sequelize,
   underscored: true,
   tableName: 'txn_history',
   timestamps: true
-})
-
-TransactionHistory.belongsTo(TokenPair, {
-  as: 'tokenPair'
 })

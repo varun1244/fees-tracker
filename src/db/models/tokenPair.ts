@@ -1,9 +1,17 @@
-import { DataTypes, Model } from 'sequelize'
+import { DataTypes, type HasManyGetAssociationsMixin, Model } from 'sequelize'
 import dbService from '../index'
+import TransactionHistory from './transactionHistory'
 
 export default class TokenPair extends Model {
+  declare id: number
+  declare name: string
+  declare contractAddress: string
+  declare startBlock: bigint
+
+  declare getTransaction: HasManyGetAssociationsMixin<TransactionHistory>
+
   getContractAddress = (): string => {
-    return this.get('contractAddress') as string
+    return this.contractAddress
   }
 }
 
@@ -15,10 +23,17 @@ TokenPair.init({
   },
   name: DataTypes.STRING,
   contractAddress: DataTypes.STRING,
-  active: DataTypes.BOOLEAN
+  active: DataTypes.BOOLEAN,
+  startBlock: DataTypes.BIGINT
 }, {
   sequelize: dbService.sequelize,
   underscored: true,
   tableName: 'token_pair',
   timestamps: true
 })
+
+TokenPair.hasMany(TransactionHistory, {
+  as: 'transaction'
+})
+
+TransactionHistory.belongsTo(TokenPair)

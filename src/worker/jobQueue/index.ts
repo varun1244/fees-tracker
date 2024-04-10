@@ -1,14 +1,17 @@
-import { Queue, Worker, type Job, type JobsOptions } from 'bullmq'
+import { type DefaultJobOptions, Queue, QueueEvents, Worker, type Job, type JobsOptions } from 'bullmq'
 import type ioRedis from 'ioredis'
 
 export interface JobQueueConfig {
   queueName: string
   connection: ioRedis
+  default?: DefaultJobOptions
 }
+
 export default class JobQueue<T> {
   queue: Queue
   queueName: string
   connection: ioRedis
+  listener: QueueEvents
   constructor (config: JobQueueConfig) {
     this.queueName = config.queueName
     this.connection = config.connection
@@ -20,11 +23,16 @@ export default class JobQueue<T> {
         removeOnFail: true
       }
     })
+    this.listener = new QueueEvents(config.queueName, {
+      connection: config.connection
+    })
   }
 
   addJob = async (id: string, data: T[], options?: JobsOptions): Promise<Job<T>> => {
     return await this.queue.add(id, data, options)
   }
+
+  getEventListener = (): QueueEvents => this.listener
 
   getQueue = (): Queue<T> => this.queue
 
@@ -34,5 +42,10 @@ export default class JobQueue<T> {
       autorun: true,
       name
     })
+  }
+
+  destroy = (): void => {
+    void this.listener.close()
+    void this.queue.close()
   }
 }

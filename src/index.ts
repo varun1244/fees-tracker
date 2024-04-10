@@ -1,21 +1,64 @@
-import server from './server'
+import EtherScanConfig from './config/etherscan.config'
 import dbService from './db'
-import logger from './logger'
 import TokenPair from './db/models/tokenPair'
-import LiveTracker from './worker/listener'
+import logger from './logger'
+import redisOption from './config/redis'
+import server from './server'
+import Worker, { type WorkerConfig } from './worker'
 import JobQueue from './worker/jobQueue'
-import redisOption from './redis'
+import LiveTracker from './worker/listener/liveTxn'
+import HistoricalTransactionManager from './worker/listener/historicalTransaction'
+import CryptoComparePrice from './worker/price/historical/cryptoCompare'
+import LivePrice from './worker/price/livePrice'
 import { type TransactionBlock } from './worker/transformer/bulkTransactionHandler'
-import Worker from './worker'
 
 const validateConnections = async (): Promise<void> => {
   await dbService.testConnection()
 }
 
-const jobQueue = new JobQueue<TransactionBlock>({
+// Highest priority to provide real-time processing
+const liveQueue = new JobQueue<TransactionBlock>({
   queueName: 'liveTracker',
-  connection: redisOption
+  connection: redisOption,
+  default: {
+    priority: 1
+  }
 })
+
+// Lower priority
+const oldTxnQueue = new JobQueue<TransactionBlock>({
+  queueName: 'historicalTracker',
+  connection: redisOption,
+  default: {
+    priority: 10
+  }
+})
+
+const workerTypes = new Map<string, object>()
+workerTypes.set('live', {
+  jobQueue: liveQueue,
+  priceManager: new LivePrice(100)
+})
+
+workerTypes.set('old', {
+  jobQueue: oldTxnQueue,
+  priceManager: new CryptoComparePrice()
+})
+
+const initWorkers = (tokenPair: TokenPair | null): void => {
+  if (tokenPair === null) {
+    return
+  }
+  const allowedWorkers: string = process.env.WORKERS ?? 'live,old'
+  allowedWorkers.split(',').forEach((x: string) => {
+    if (workerTypes.has(x)) {
+      new Worker({
+        tokenPair,
+        ...workerTypes.get(x)
+      } as WorkerConfig)
+    }
+  })
+}
 
 const init = async (): Promise<void> => {
   await validateConnections()
@@ -23,26 +66,28 @@ const init = async (): Promise<void> => {
 
   // Setup individual worker nodes
   if (process.env.MODE === 'worker') {
-    if (tokenPair !== null) {
-      new Worker({
-        tokenPair,
-        jobQueue
-      })
-    }
+    initWorkers(tokenPair)
   } else {
-    // start the server and also the live tracker on the same instance
+    // start the server and also the trackers on the same instance
     // It can be split into its own seperate instance
     server()
     if (tokenPair !== null) {
       void new LiveTracker({
-        etherScan: {
-          tokenPair,
-          apiKey: process.env.ETHERSCAN_API_KEY ?? '',
-          pollTimeout: 2000
-        }
+        etherscan: EtherScanConfig(tokenPair)
       }, (data: TransactionBlock[]) => {
-        void jobQueue.addJob('newJobs', data)
+        void liveQueue.addJob('newJobs', data)
       }).initListener()
+
+      const histTxnManager = new HistoricalTransactionManager({
+        tokenPair,
+        jobQueue: oldTxnQueue,
+        etherscan: EtherScanConfig(tokenPair)
+      })
+      void await histTxnManager.start()
+
+      oldTxnQueue.getEventListener().on('completed', () => {
+        setTimeout(histTxnManager.start, 10000)
+      })
     }
   }
 }

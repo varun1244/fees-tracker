@@ -1,7 +1,7 @@
 import type TokenPair from '../../db/models/tokenPair'
 import { type TransactionModel } from '../../db/models/transactionHistory'
 import logger from '../../logger'
-import type FeeCalculator from './feeCalculator'
+import type BasePrice from '../price/base'
 
 export interface TransactionBlock {
   blockNumber: string
@@ -23,6 +23,7 @@ export interface TransactionBlock {
   cumulativeGasUsed: string
   input: string
   confirmations: string
+  swapRate?: string
 }
 
 export interface Fees {
@@ -33,25 +34,30 @@ export interface Fees {
 
 export default class BulkTransactionHandler {
   tokenPair: TokenPair
-  feeCalculator: FeeCalculator
-  constructor (tokenPair: TokenPair, feeCalculator: FeeCalculator) {
+  rateCalculator: BasePrice<any>
+  constructor (tokenPair: TokenPair, rateCalculator: BasePrice<any>) {
     this.tokenPair = tokenPair
-    this.feeCalculator = feeCalculator
+    this.rateCalculator = rateCalculator
+  }
+
+  private readonly mathOp = (val1: string, val2: string, denom = 18): { op1: number, op2: number, offset: number } => {
+    let decimals = val1.length
+    decimals = decimals + val2.length
+    const op1 = parseFloat('.' + val1)
+    const op2 = parseFloat('.' + val2)
+    const offset = (10 ** (denom - decimals))
+    return { op1, op2, offset }
   }
 
   computePrice = async (ts: number, txn: TransactionBlock): Promise<Fees | null> => {
     try {
-      const rate = this.feeCalculator.getRate(ts)
-      if (rate === undefined) throw new Error('Unknown rate')
-      let decimals = txn.gasUsed.length
-      decimals = decimals + txn.gasPrice.length
-      const gasUsed = parseFloat('.' + txn.gasUsed)
-      const gasPrice = parseFloat('.' + txn.gasPrice)
-      const offset = (10 ** (18 - decimals))
-      const feesEth = (gasUsed * gasPrice / offset)
+      const rate = await this.rateCalculator.getRate(ts)
+      if (rate === null) throw new Error('Unknown rate')
+      const { op1, op2, offset } = this.mathOp(txn.gasUsed, txn.gasPrice)
+      const feesEth = (op1 * op2) / offset
       return {
         feesEth: feesEth.toString(),
-        feesUsdt: this.feeCalculator.getFeesUsd(ts, feesEth),
+        feesUsdt: await this.rateCalculator.getFeesUsd(ts, feesEth),
         rate: rate?.toString()
       }
     } catch (err) {
@@ -71,22 +77,39 @@ export default class BulkTransactionHandler {
       timestamp: new Date(ts * 1000),
       feesEth: pricing.feesEth,
       feesUsdt: pricing.feesUsdt,
-      tokenPairId: this.tokenPair.get('id') as string,
+      tokenPairId: this.tokenPair.get('id'),
+      blockNumber: BigInt(txn.blockNumber),
       details: {
-        blockNumber: txn.blockNumber,
         from: txn.from,
         value: txn.to,
         gas: txn.gas,
         gasPrice: txn.gasPrice,
         rate: pricing.rate,
+        swapRate: txn.swapRate,
         gasUsed: txn.gasUsed,
         cumulativeGasUsed: txn.cumulativeGasUsed
       }
     }
   }
 
+  /**
+   * Method to calculate the SWAP rate of the transaction and filter out one of the entries
+   * @param data
+   */
+  mergeAndFilter = (data: TransactionBlock[]): Array<{ swapRate: string, blockNumber: string, timeStamp: string, hash: string, nonce: string, blockHash: string, from: string, contractAddress: string, to: string, value: string, tokenName: string, tokenSymbol: string, tokenDecimal: string, transactionIndex: string, gas: string, gasPrice: string, gasUsed: string, cumulativeGasUsed: string, input: string, confirmations: string }> => {
+    const resp = []
+    for (let i = 0; i < data.length; i = i + 2) {
+      const { op1, op2, offset } = this.mathOp(data[i].value, data[i + 1].value, 24)
+      resp.push({
+        ...data[i],
+        swapRate: (op1 / op2 / offset).toString()
+      })
+    }
+    return resp
+  }
+
   process = async (data: TransactionBlock[]): Promise<TransactionModel[]> => {
-    const processed = await Promise.all(data.map(this.parseTxn))
+    const processed = await Promise.all(this.mergeAndFilter(data).map(this.parseTxn))
     return processed.filter(txn => txn !== null) as TransactionModel[]
   }
 }

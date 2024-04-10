@@ -27,7 +27,8 @@ services:
     container_name: node-app-main
     volumes:
       - ./src:/app/src
-    command: [ "dev" ]
+      - ./tests:/app/tests
+    command: [ "test" ]
     environment:
       DB_DIALECT: 'postgres'
       DB_USER: ${POSTGRES_USER}
@@ -39,39 +40,5 @@ services:
       ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
     ports:
       - "3000:3000"
-    depends_on:
-      - db
-  node-app-worker1:
-    build: .
-    volumes:
-      - ./src:/app/src
-    command: [ "dev:worker" ]
-    environment:
-      DB_DIALECT: 'postgres'
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${POSTGRES_DB}
-      DB_HOST: db
-      DB_PORT: 5432
-      REDIS_URL: redis://redis-service
-      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
-      WORKERS: 'live'
-    depends_on:
-      - db
-  node-app-worker2:
-    build: .
-    volumes:
-      - ./src:/app/src
-    command: [ "dev:worker" ]
-    environment:
-      DB_DIALECT: 'postgres'
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${POSTGRES_DB}
-      DB_HOST: db
-      DB_PORT: 5432
-      REDIS_URL: redis://redis-service
-      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
-      WORKERS: 'old'
     depends_on:
       - db

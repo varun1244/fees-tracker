@@ -15,6 +15,9 @@ describe('models/tokenPair', () => {
     expect(tokenPair?.dataValues).to.include.all.keys([
       'id', 'name', 'contractAddress', 'createdAt', 'updatedAt', 'active'
     ])
+
+    expect(tokenPair?.getContractAddress()).to.eq(tokenPair?.get('contractAddress'))
+    expect(typeof tokenPair?.getTransaction).to.be.eq('function')
   })
 
   it('update tokenPair name', async () => {

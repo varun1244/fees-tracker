@@ -1,18 +1,18 @@
 import logger from '../../logger'
+import type Tracker from '../tracker/interface'
 import { type TransactionBlock } from '../transformer/bulkTransactionHandler'
-import EtherscanTracker, { type EtherscanConfig } from './tracker/etherscan'
-import { type InfuraConfig } from './tracker/infura'
-import type Tracker from './tracker/interface'
+import EtherscanTracker, { type EtherscanConfig } from '../tracker/etherscan'
+import { type InfuraConfig } from '../tracker/infura'
 
 export interface TrackerConfig {
-  etherScan?: EtherscanConfig
+  etherscan?: EtherscanConfig
   infura?: InfuraConfig
 }
 
 export type TrackerCallBack = (block: TransactionBlock[]) => void
 
 export default class LiveTracker {
-  private readonly etherScan
+  private readonly etherscan
   private readonly infura
   private readonly callback: TrackerCallBack | undefined
   private tracker: Tracker | null
@@ -22,9 +22,9 @@ export default class LiveTracker {
   ) {
     this.tracker = null
     this.infura = config.infura
-    this.etherScan = config.etherScan
-    if (this.infura === undefined && this.etherScan === undefined) {
-      throw new Error('No listener config found')
+    this.etherscan = config.etherscan
+    if (this.infura === undefined && this.etherscan === undefined) {
+      throw new Error('No configuration provided')
     }
     this.callback = callback
   }
@@ -32,9 +32,9 @@ export default class LiveTracker {
   initListener = async (): Promise<void> => {
     if (this.tracker !== null) return
     if (this.infura !== undefined) {
-      this.tracker = await this.listenWithInfura()
-    } else if (this.etherScan !== undefined) {
-      this.tracker = await this.listenWithEtherScan()
+      this.tracker = this.listenWithInfura()
+    } else if (this.etherscan !== undefined) {
+      this.tracker = this.listenWithEtherScan()
     }
 
     process.on('SIGTERM', () => {
@@ -49,16 +49,18 @@ export default class LiveTracker {
     }
   }
 
-  private readonly listenWithInfura = async (): Promise<Tracker> => {
+  private readonly listenWithInfura = (): Tracker => {
     // this.tracker = new InfuraTracker(this.infura!)
     throw new Error('Module not implemented')
   }
 
-  private readonly listenWithEtherScan = async (): Promise<Tracker> => {
-    if (this.etherScan === undefined) {
+  private readonly listenWithEtherScan = (): Tracker => {
+    if (this.etherscan === undefined) {
       throw new Error('Invalid config')
     }
     logger.info('Using etherscan listener')
-    return await new EtherscanTracker(this.etherScan, this.callback).connect()
+    const tracker = new EtherscanTracker(this.etherscan, this.callback)
+    tracker.connect()
+    return tracker
   }
 }
